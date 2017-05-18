@@ -15,21 +15,8 @@ xmlParse(
     return -1;
 
 tgEnd:
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
-  case '\t':
-  case '\n':
-  case '\r':
-  case ' ':
-    break;
-
-  default:
-    s--;
-    vl.s = s;
-    goto bgn;
-  }
+  vl.s = s;
+  goto bgn;
 
 err:
   nm.s = "Error!";

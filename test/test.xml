@@ -1,5 +1,6 @@
 <!DOCTYPE a b "c"/>
 <doc>
+    <!-- comment -->
     <atr x="1" y='2' />
     <bod>a</bod>
     <bth x="a">1</bth>
