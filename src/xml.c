@@ -15,8 +15,21 @@ xmlParse(
     return -1;
 
 tgEnd:
-  vl.s = s;
-  goto bgn;
+  for (;;) switch (*s++) {
+  case '\0':
+    goto rtn;
+
+  case '\t':
+  case '\n':
+  case '\r':
+  case ' ':
+    break;
+
+  default:
+    s--;
+    vl.s = s;
+    goto bgn;
+  }
 
 err:
   nm.s = "Error!";
@@ -373,6 +386,20 @@ sTg:
     goto eTg;
 
   case '!':
+    if (*(s + 0) == '-'
+     && *(s + 1) == '-'
+     && (*(s + 2) == ' ' || *(s + 2) == '\n' || *(s + 2) == '\r')) {
+      for (s += 2; *s; s++)
+        if (*(s + 0) == ' '
+         && *(s + 1) == '-'
+         && *(s + 2) == '-'
+         && *(s + 3) == '>') {
+          s += 4;
+          goto tgEnd;
+        }
+      s++;
+      goto rtn;
+    }
   case '?':
   case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
   case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
@@ -398,7 +425,8 @@ bgn:
   case '\t':
   case '\n':
   case '\r':
-                      case  32: case  33: case  34: case  35: case  36: case  37: case  38: case  39:
+  case ' ':
+                                case  33: case  34: case  35: case  36: case  37: case  38: case  39:
   case  40: case  41: case  42: case  43: case  44: case  45: case  46: case  47: case  48: case  49:
   case  50: case  51: case  52: case  53: case  54: case  55: case  56: case  57: case  58: case  59:
             case  61: case  62: case  63: case  64: case  65: case  66: case  67: case  68: case  69:
