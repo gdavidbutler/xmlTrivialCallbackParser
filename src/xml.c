@@ -1,3 +1,8 @@
+/*
+ * Copyright 2017 G. David Butler. All rights reserved.
+ * License: https://github.com/gdavidbutler/xmlTrivialCallbackParser/blob/master/LICENSE
+ */
+
 #include <stdlib.h>
 #include "xml.h"
 
