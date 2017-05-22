@@ -88,6 +88,7 @@ nlAtrVal:
     goto atrValSqq;
 
   case '/':
+  case '?':
     goto nlTg;
 
   case '>':
@@ -106,7 +107,6 @@ nlAtrVal:
   case '\n':
   case '\r':
   case ' ':
-  case '?':
     break;
 
   default:
@@ -188,6 +188,7 @@ atrVal:
     goto atrValSqq;
 
   case '/':
+  case '?':
     goto nlTg;
 
   case '>':
@@ -206,7 +207,6 @@ atrVal:
   case '\n':
   case '\r':
   case ' ':
-  case '?':
     break;
 
   default:
@@ -253,7 +253,7 @@ atrValSqq:
 
 eTgNm:
   (tg + tgL - 1)->l = s - (tg + tgL - 1)->s - 1;
-  if (tgL == tgD)
+  if (tgL <= tgD)
     vl.l = 0;
   if (cb)
     cb(xmlTp_Ee, tgL, tg, 0, &vl, v);
@@ -329,6 +329,7 @@ sTgNm:
     goto atrValSqq;
 
   case '/':
+  case '?':
     goto nlTg;
 
   case '>':
@@ -347,7 +348,6 @@ sTgNm:
   case '\n':
   case '\r':
   case ' ':
-  case '?':
     break;
 
   default:
