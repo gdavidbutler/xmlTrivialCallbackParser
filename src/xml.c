@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "xml.h"
 
 int
@@ -7,12 +8,17 @@ xmlParse(
 ,void *v
 ){
   const char *b;
-  xmlSt_t tg;
+  unsigned int tgM; /* maximum level for allocation */
+  unsigned int tgL; /* current level */
+  unsigned int tgD; /* gone deeper? for body */
+  xmlSt_t *tg;
   xmlSt_t nm;
   xmlSt_t vl;
 
   if (!(b = s))
     return -1;
+  tgD = tgL = tgM = 0;
+  tg = 0;
 
 tgEnd:
   vl.s = s;
@@ -24,7 +30,7 @@ err:
   vl.s = s - 1;
   vl.l = 1;
   if (cb)
-    cb(xmlTp_Er, &tg, &nm, &vl, v);
+    cb(xmlTp_Er, tgL, tg, &nm, &vl, v);
   goto rtn;
 
 atrEq:
@@ -49,8 +55,11 @@ atrEq:
   }
 
 nlTg:
+  vl.l = 0;
   if (cb)
-    cb(xmlTp_Eb, &tg, 0, 0, v);
+    cb(xmlTp_Ee, tgL, tg, 0, &vl, v);
+  if (tgL)
+    tgL--;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -65,7 +74,7 @@ nlTg:
 nlAtrVal:
   vl.l = 0;
   if (cb)
-    cb(xmlTp_At, &tg, &nm, &vl, v);
+    cb(xmlTp_Ea, tgL, tg, &nm, &vl, v);
   nm.l = 0;
   s--;
   for (;;) switch (*s++) {
@@ -164,9 +173,9 @@ atrVal:
   vl.l = s - vl.s - 1;
   if (cb) {
     if (nm.l)
-      cb(xmlTp_At, &tg, &nm, &vl, v);
+      cb(xmlTp_Ea, tgL, tg, &nm, &vl, v);
     else
-      cb(xmlTp_At, &tg, &vl, &nm, v);
+      cb(xmlTp_Ea, tgL, tg, &vl, &nm, v);
   }
   for (;;) switch (*s++) {
   case '\0':
@@ -243,9 +252,13 @@ atrValSqq:
   }
 
 eTgNm:
-  tg.l = s - tg.s - 1;
+  (tg + tgL - 1)->l = s - (tg + tgL - 1)->s - 1;
+  if (tgL == tgD)
+    vl.l = 0;
   if (cb)
-    cb(xmlTp_Ee, &tg, 0, &vl, v);
+    cb(xmlTp_Ee, tgL, tg, 0, &vl, v);
+  if (tgL)
+    tgL--;
   s--;
   for (;;) switch (*s++) {
   case '\0':
@@ -259,7 +272,7 @@ eTgNm:
   }
 
 eNm:
-  tg.s = s - 1;
+  (tg + tgL - 1)->s = s - 1;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -300,9 +313,10 @@ eTg:
   }
 
 sTgNm:
-  tg.l = s - tg.s - 1;
+  (tg + tgL)->l = s - (tg + tgL)->s - 1;
+  tgD = tgL++;
   if (cb)
-    cb(xmlTp_Eb, &tg, 0, 0, v);
+    cb(xmlTp_Eb, tgL, tg, 0, 0, v);
   s--;
   for (;;) switch (*s++) {
   case '\0':
@@ -341,7 +355,15 @@ sTgNm:
   }
 
 sNm:
-  tg.s = s - 1;
+  if (tgL == tgM) {
+    void *t;
+
+    if (!(t = realloc(tg, (tgM + 1) * sizeof(*tg))))
+      goto rtn;
+    tg = t;
+    tgM++;
+  }
+  (tg + tgL)->s = s - 1;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -430,5 +452,6 @@ bgn:
   }
 
 rtn:
+  free(tg);
   return s - b - 1;
 }

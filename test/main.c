@@ -7,24 +7,37 @@
 void
 cb(
   xmlTp_t typ
- ,const xmlSt_t* tg
- ,const xmlSt_t* nm
- ,const xmlSt_t* vl
- ,void* v
+ ,unsigned int l
+ ,const xmlSt_t *tg
+ ,const xmlSt_t *nm
+ ,const xmlSt_t *vl
+ ,void *v
 ){
   (void)v;
   switch (typ) {
   case xmlTp_Eb:
-    printf("<%.*s>\n", tg->l, tg->s);
+    printf("B /%.*s", tg->l, tg->s);
+    for (l--, tg++; l; l--, tg++)
+      printf("/%.*s", tg->l, tg->s);
+    printf("\n");
     break;
-  case xmlTp_At:
-    printf("%.*s:\"%.*s\"=\"%.*s\"\n", tg->l, tg->s, nm->l, nm->s, vl->l, vl->s);
+  case xmlTp_Ea:
+    printf("A /%.*s", tg->l, tg->s);
+    for (l--, tg++; l; l--, tg++)
+      printf("/%.*s", tg->l, tg->s);
+    printf(":\"%.*s\"=\"%.*s\"\n", nm->l, nm->s, vl->l, vl->s);
     break;
   case xmlTp_Ee:
-    printf("</%.*s>(%.*s)\n", tg->l, tg->s, vl->l, vl->s);
+    printf("E /%.*s", tg->l, tg->s);
+    for (l--, tg++; l; l--, tg++)
+      printf("/%.*s", tg->l, tg->s);
+    printf("(%.*s)\n", vl->l, vl->s);
     break;
   case xmlTp_Er:
-    printf("! %.*s:%.*s=\"%.*s\"\n", tg->l, tg->s, nm->l, nm->s, vl->l, vl->s);
+    printf("! %.*s", tg->l, tg->s);
+    for (l--, tg++; l; l--, tg++)
+      printf("/%.*s", tg->l, tg->s);
+    printf(":%.*s=\"%.*s\"\n", nm->l, nm->s, vl->l, vl->s);
     break;
   }
   return;
