@@ -47,7 +47,7 @@ atrEq:
     goto atrValDq;
 
   case '\'':
-    goto atrValSqq;
+    goto atrValSq;
 
   case '\t':
   case '\n':
@@ -90,7 +90,7 @@ nlAtrVal:
     goto atrValDq;
 
   case '\'':
-    goto atrValSqq;
+    goto atrValSq;
 
   case '/':
   case '?':
@@ -190,7 +190,7 @@ atrVal:
     goto atrValDq;
 
   case '\'':
-    goto atrValSqq;
+    goto atrValSq;
 
   case '/':
   case '?':
@@ -237,7 +237,7 @@ atrValDq:
     break;
   }
 
-atrValSqq:
+atrValSq:
   vl.s = s;
   for (;;) switch (*s++) {
   case '\0':
@@ -331,7 +331,7 @@ sTgNm:
     goto atrValDq;
 
   case '\'':
-    goto atrValSqq;
+    goto atrValSq;
 
   case '/':
   case '?':
