@@ -34,7 +34,7 @@ tgEnd:
 err:
   vl.l = 1;
   vl.s = s - 1;
-  nm.l = snprintf(ers, sizeof(ers), "Error@%ld", vl.s - b);
+  nm.l = snprintf(ers, sizeof(ers), "Error@%zd", vl.s - b);
   nm.s = ers;
   if (cb)
     cb(xmlTp_Er, tgL, tg, &nm, &vl, v);
