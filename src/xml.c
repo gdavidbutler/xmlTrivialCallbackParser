@@ -9,7 +9,7 @@
 
 int
 xmlParse(
-  xmlCb cb
+  xmlCb_t cb
  ,const char *s
 ,void *v
 ){

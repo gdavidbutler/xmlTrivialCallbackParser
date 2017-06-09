@@ -15,7 +15,7 @@ typedef struct {
   unsigned int l;
 } xmlSt_t;
 
-typedef void (*xmlCb)(
+typedef void (*xmlCb_t)(
   xmlTp_t
  ,unsigned int numberOfElementTagNames
  ,const xmlSt_t *elementTagName
@@ -25,4 +25,4 @@ typedef void (*xmlCb)(
 );
 
 /* return -1 on null buf or offset of last char parsed */
-int xmlParse(xmlCb, const char *buf, void *userContext);
+int xmlParse(xmlCb_t, const char *buf, void *userContext);
