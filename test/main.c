@@ -25,13 +25,31 @@ cb(
     printf("A /%.*s", tg->l, tg->s);
     for (l--, tg++; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
-    printf(":\"%.*s\"=\"%.*s\"\n", nm->l, nm->s, vl->l, vl->s);
+    {
+      char *d;
+
+      if (!(d = malloc(vl->l + 1))
+       || xmlDecode(d, vl->s, vl->l) != (int)vl->l)
+        printf(":\"%.*s\"=\"%.*s\"\n", nm->l, nm->s, vl->l, vl->s);
+      else
+        printf(":\"%.*s\"=\"%.*s\"(%s)\n", nm->l, nm->s, vl->l, vl->s, d);
+      free(d);
+    }
     break;
   case xmlTp_Ee:
     printf("E /%.*s", tg->l, tg->s);
     for (l--, tg++; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
-    printf("(%.*s)\n", vl->l, vl->s);
+    {
+      char *d;
+
+      if (!(d = malloc(vl->l + 1))
+       || xmlDecode(d, vl->s, vl->l) != (int)vl->l)
+        printf("(%.*s)\n", vl->l, vl->s);
+      else
+        printf("(%.*s)(%s)\n", vl->l, vl->s, d);
+      free(d);
+    }
     break;
   case xmlTp_Er:
     printf("! %.*s", tg->l, tg->s);

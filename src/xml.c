@@ -479,3 +479,182 @@ rtn:
   free(tg);
   return s - b - 1;
 }
+
+int
+xmlDecode(
+  char *d
+ ,const char *s
+ ,unsigned int l
+){
+  const char *b;
+
+  if (!d || !(b = s))
+    return -1;
+  for (; l--;) switch (*s) {
+  case '&':
+    if (!(s++,l--)) goto rtn; else switch (*s) {
+    case 'a':
+      if (!(s++,l--)) goto rtn; else switch (*s) {
+      case 'm':
+        if (!(s++,l--)) goto rtn; else switch (*s) {
+        case 'p':
+          if (!(s++,l--)) goto rtn; else switch (*s) {
+          case ';':
+            s++;
+            *d++ = '&';
+            continue;
+          default:
+            goto rtn;
+          }
+        default:
+          goto rtn;
+        }
+      case 'p':
+        if (!(s++,l--)) goto rtn; else switch (*s) {
+        case 'o':
+          if (!(s++,l--)) goto rtn; else switch (*s) {
+          case 's':
+            if (!(s++,l--)) goto rtn; else switch (*s) {
+            case ';':
+              s++;
+              *d++ = '\'';
+              continue;
+            default:
+              goto rtn;
+            }
+          default:
+            goto rtn;
+          }
+        default:
+          goto rtn;
+        }
+      default:
+        goto rtn;
+      }
+    case 'g':
+      if (!(s++,l--)) goto rtn; else switch (*s) {
+      case 't':
+        if (!(s++,l--)) goto rtn; else switch (*s) {
+        case ';':
+          s++;
+          *d++ = '>';
+          continue;
+        default:
+          goto rtn;
+        }
+      default:
+        goto rtn;
+      }
+    case 'l':
+      if (!(s++,l--)) goto rtn; else switch (*s) {
+      case 't':
+        if (!(s++,l--)) goto rtn; else switch (*s) {
+        case ';':
+          s++;
+          *d++ = '<';
+          continue;
+        default:
+          goto rtn;
+        }
+      default:
+        goto rtn;
+      }
+    case 'q':
+      if (!(s++,l--)) goto rtn; else switch (*s) {
+      case 'u':
+        if (!(s++,l--)) goto rtn; else switch (*s) {
+        case 'o':
+          if (!(s++,l--)) goto rtn; else switch (*s) {
+          case 't':
+            if (!(s++,l--)) goto rtn; else switch (*s) {
+            case ';':
+              s++;
+              *d++ = '"';
+              continue;
+            default:
+              goto rtn;
+            }
+          default:
+            goto rtn;
+          }
+        default:
+          goto rtn;
+        }
+      default:
+        goto rtn;
+      }
+    case '#':
+      if (!(s++,l--)) goto rtn; else switch (*s) {
+        int c;
+
+      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+        c = *s - '0';
+        for (s++; l; s++, l--) switch (*s) {
+        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+          c *= 10;
+          c += *s - '0';
+          break;
+        case ';':
+          goto endD;
+        default:
+          goto rtn;
+        }
+endD:
+        if (!l--)
+          goto rtn;
+        s++;
+        *d++ = c;
+        continue;
+      case 'x':
+        if (!(s++,l--)) goto rtn; else switch (*s) {
+        case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+          c = *s - '0';
+          goto bgnH;
+        case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+          c = 10 + (*s - 'A');
+          goto bgnH;
+        case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+          c = 10 + (*s - 'a');
+bgnH:
+          for (s++; l; s++, l--) switch (*s) {
+          case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+            c *= 16;
+            c += *s - '0';
+            break;
+          case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+            c *= 16;
+            c += 10 + (*s - 'A');
+            break;
+          case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+            c *= 16;
+            c += 10 + (*s - 'a');
+            break;
+          case ';':
+            goto endH;
+          default:
+            goto rtn;
+          }
+endH:
+          if (!l--)
+            goto rtn;
+          s++;
+          *d++ = c;
+          continue;
+        default:
+          goto rtn;
+        }
+      default:
+        goto rtn;
+      }
+    default:
+      goto rtn;
+    }
+  default:
+    *d++ = *s++;
+    break;
+  }
+
+rtn:
+  *d = '\0';
+  return s - b;
+}

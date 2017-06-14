@@ -2,7 +2,8 @@
 <!DOCTYPE a b "c"/>
 <doc>
     <!-- comment -->
-    <atr x="1" y='2' />
-    <bod>a</bod>
-    <bth x="a">1</bth>
+    <atr x="cat" y='mouse' />
+    <bod>&lt;atr x=&quot;cat&quot; y=&apos;mouse&apos; /&gt;</bod>
+    <bth x="cat" y='mouse'>&quot;cat&quot;&amp;&apos;mouse&apos;</bth>
+    <spc spc=" ">&quot;&#32;&quot;,&apos;&#x20;&apos;</spc>
 </doc>
