@@ -52,12 +52,16 @@ cb(
     }
     break;
   case xmlTp_Er:
-    printf("! %.*s", tg->l, tg->s);
-    for (l--, tg++; l; l--, tg++)
-      printf("/%.*s", tg->l, tg->s);
-    printf(":%.*s=\"%.*s\"\n", nm->l, nm->s, vl->l, vl->s);
+    printf("! ");
+    if (l) {
+      printf("%.*s", tg->l, tg->s);
+      for (l--, tg++; l; l--, tg++)
+        printf("/%.*s", tg->l, tg->s);
+    }
+    printf(":%.*s=(%.*s)\n", nm->l, nm->s, vl->l, vl->s);
     break;
   }
+  fflush(stdout);
   return;
 }
 

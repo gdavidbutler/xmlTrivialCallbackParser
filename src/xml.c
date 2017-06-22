@@ -274,7 +274,13 @@ atrValSq:
   }
 
 eTgNm:
-  (tg + tgL - 1)->l = s - (tg + tgL - 1)->s - 1;
+  if (tgL)
+    (tg + tgL - 1)->l = s - (tg + tgL - 1)->s - 1;
+  else {
+    (tg + tgL)->l = s - (tg + tgL)->s - 1;
+    tgL++;
+    vl.l = 0;
+  }
   if (tgL <= tgD)
     vl.l = 0;
   if (cb)
@@ -294,7 +300,19 @@ eTgNm:
   }
 
 eNm:
-  (tg + tgL - 1)->s = s - 1;
+  if (tgL)
+    (tg + tgL - 1)->s = s - 1;
+  else {
+    if (tgL == tgM) {
+      void *t;
+
+      if (!(t = realloc(tg, (tgM + 1) * sizeof(*tg))))
+        goto rtn;
+      tg = t;
+      tgM++;
+    }
+    (tg + tgL)->s = s - 1;
+  }
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -302,6 +320,11 @@ eNm:
                                                     case '-': case '.':
   case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
   case ':':
+    break;
+
+                                          case '>':
+    goto eTgNm;
+
   case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
   case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
   case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
@@ -312,7 +335,7 @@ eNm:
     break;
 
   default:
-    goto eTgNm;
+    goto err;
   }
 
 eTg:
@@ -415,7 +438,7 @@ sTg:
      && *(s + 1) == '-'
      && (*(s + 2) == ' ' || *(s + 2) == '\n' || *(s + 2) == '\r')) {
       for (s += 2; *s; s++)
-        if (*(s + 0) == ' '
+        if ((*(s + 0) == ' ' || *(s + 0) == '\n' || *(s + 0) == '\r')
          && *(s + 1) == '-'
          && *(s + 2) == '-'
          && *(s + 3) == '>') {
