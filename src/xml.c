@@ -48,10 +48,10 @@ atrEq:
   case '\t': case '\n': case '\r': case ' ':
     break;
 
-            case '"':
+  case '"':
     goto atrValDq;
 
-                                                              case '\'':
+  case '\'':
     goto atrValSq;
 
   default:
@@ -68,7 +68,7 @@ nlTg:
   case '\0':
     goto rtn;
 
-                                          case '>':
+  case '>':
     goto tgEnd;
 
   default:
@@ -88,30 +88,23 @@ nlAtrVal:
   case '\t': case '\n': case '\r': case ' ':
     break;
 
-            case '"':
+  case '"':
     goto atrValDq;
 
-                                                              case '\'':
+  case '\'':
     goto atrValSq;
 
-                                                                        case '/':
-                                                    case '?':
+  case '/': case '?':
     goto nlTg;
 
-                                          case '>':
+  case '<':
+    goto err;
+
+  case '>':
     goto tgEnd;
 
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    goto atr;
-
   default:
-    goto err;
+    goto atr;
   }
 
 atrNm:
@@ -124,25 +117,17 @@ atrNm:
   case '\t': case '\n': case '\r': case ' ':
     break;
 
-            case '"':                                         case '\'':
-                                                                                  case '/':
+  case '"': case '\'': case '/': case '>':
     goto nlAtrVal;
 
-                                case '=':
+  case '<':
+    goto err;
+
+  case '=':
     goto atrEq;
 
-                                          case '>':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    goto nlAtrVal;
-
   default:
-    goto err;
+    goto nlAtrVal;
   }
 
 atr:
@@ -151,20 +136,15 @@ atr:
   case '\0':
     goto rtn;
 
-                                                    case '-': case '.':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    break;
+  case '\t': case '\n': case '\r': case ' ':
+  case '"': case '\'': case '/': case '=': case '>':
+    goto atrNm;
+
+  case '<':
+    goto err;
 
   default:
-    goto atrNm;
+    break;
   }
 
 atrVal:
@@ -182,32 +162,26 @@ atrVal:
   case '\t': case '\n': case '\r': case ' ':
     break;
 
-            case '"':
+  case '"':
     goto atrValDq;
 
-                                                              case '\'':
+  case '\'':
     goto atrValSq;
 
-                                                                        case '/':
+  case '/':
     goto nlTg;
 
-                                          case '>':
+  case '<': case '=':
+    goto err;
+
+  case '>':
     goto tgEnd;
 
-                                                    case '?':
+  case '?':
     goto nlTg;
 
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    goto atr;
-
   default:
-    goto err;
+    goto atr;
   }
 
 atrValDq:
@@ -216,30 +190,13 @@ atrValDq:
   case '\0':
     goto rtn;
 
-  case '\t': case '\n': case '\r': case ' ':
-  case '!':
-    break;
-
-            case '"':
+  case '"':
     goto atrVal;
 
-                      case '#': case '$': case '%': case '&': case '\'':
-  case '(': case ')': case '*': case '+': case ',': case '-': case '.': case '/':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':': case ';': case '<': case '=': case '>': case '?': case '@':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-  case '[': case '\\':
-  case ']': case '^': case '_': case '`':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-  case '{': case '|': case '}': case '~':
-    break;
+  case '<': case '>':
+    goto err;
 
   default:
-    goto err;
     break;
   }
 
@@ -249,28 +206,14 @@ atrValSq:
   case '\0':
     goto rtn;
 
-  case '\t': case '\n': case '\r': case ' ':
-  case '!': case '"': case '#': case '$': case '%': case '&':
-    break;
-                                                              case '\'':
+  case '\'':
     goto atrVal;
 
-  case '(': case ')': case '*': case '+': case ',': case '-': case '.': case '/':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':': case ';': case '<': case '=': case '>': case '?': case '@':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-  case '[': case '\\':
-  case ']': case '^': case '_': case '`':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-  case '{': case '|': case '}': case '~':
-    break;
+  case '<': case '>':
+    goto err;
 
   default:
-    goto err;
+    break;
   }
 
 eTgNm:
@@ -279,7 +222,6 @@ eTgNm:
   else {
     (tg + tgL)->l = s - (tg + tgL)->s - 1;
     tgL++;
-    vl.l = 0;
   }
   if (tgL <= tgD)
     vl.l = 0;
@@ -292,7 +234,7 @@ eTgNm:
   case '\0':
     goto rtn;
 
-                                          case '>':
+  case '>':
     goto tgEnd;
 
   default:
@@ -317,25 +259,15 @@ eNm:
   case '\0':
     goto rtn;
 
-                                                    case '-': case '.':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':':
-    break;
+  case '\t': case '\n': case '\r': case ' ':
+  case '"': case '\'': case '/': case '<':
+    goto err;
 
-                                          case '>':
+  case '>':
     goto eTgNm;
 
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    break;
-
   default:
-    goto err;
+    break;
   }
 
 eTg:
@@ -343,17 +275,13 @@ eTg:
   case '\0':
     goto rtn;
 
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    goto eNm;
+  case '\t': case '\n': case '\r': case ' ':
+  case '"': case '\'':
+  case '<': case '>':
+    goto err;
 
   default:
-    goto err;
+    goto eNm;
   }
 
 sTgNm:
@@ -369,32 +297,26 @@ sTgNm:
   case '\t': case '\n': case '\r': case ' ':
     break;
 
-            case '"':
+  case '"':
     goto atrValDq;
 
-                                                              case '\'':
+  case '\'':
     goto atrValSq;
 
-                                                                        case '/':
+  case '/':
     goto nlTg;
 
-                                          case '>':
+  case '<': case '=':
+    goto err;
+
+  case '>':
     goto tgEnd;
 
-                                                    case '?':
+  case '?':
     goto nlTg;
 
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    goto atr;
-
   default:
-    goto err;
+    goto atr;
   }
 
 sNm:
@@ -411,20 +333,15 @@ sNm:
   case '\0':
     goto rtn;
 
-                                                    case '-': case '.':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    break;
+  case '\t': case '\n': case '\r': case ' ':
+  case '"': case '\'': case '/': case '>': case '?':
+    goto sTgNm;
+
+  case '<':
+    goto err;
 
   default:
-    goto sTgNm;
+    break;
   }
 
 sTg:
@@ -432,6 +349,11 @@ sTg:
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
+
+  case '\t': case '\n': case '\r': case ' ':
+  case '"': case '\'':
+  case '<': case '>':
+    goto err;
 
   case '!':
     if (*(s + 0) == '-'
@@ -450,21 +372,11 @@ sTg:
     }
     goto sNm;
 
-                                                                        case '/':
+  case '/':
     goto eTg;
 
-                                                    case '?':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-                      case '_':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-    goto sNm;
-
   default:
-    goto err;
+    goto sNm;
   }
 
 bgn:
@@ -472,30 +384,29 @@ bgn:
   case '\0':
     goto rtn;
 
-  case '\t': case '\n': case '\r': case ' ':
-  case '!': case '"': case '#': case '$': case '%': case '&': case '\'':
-  case '(': case ')': case '*': case '+': case ',': case '-': case '.': case '/':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':': case ';':
-    break;
-
-                      case '<':
+  case '<':
+    if (*(s + 0) == '!'
+     && *(s + 1) == '['
+     && *(s + 2) == 'C'
+     && *(s + 3) == 'D'
+     && *(s + 4) == 'A'
+     && *(s + 5) == 'T'
+     && *(s + 6) == 'A'
+     && *(s + 7) == '[') {
+      for (s += 7; *s; s++)
+        if (*(s + 0) == ']'
+         && *(s + 1) == ']'
+         && *(s + 2) == '>') {
+          s += 3;
+          goto bgn;
+        }
+      s++;
+      goto rtn;
+    }
     goto sTg;
 
-                                case '=': case '>': case '?': case '@':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':
-  case 'K': case 'L': case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T':
-  case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-  case '[': case '\\':
-  case ']': case '^': case '_': case '`':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
-  case 'k': case 'l': case 'm': case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't':
-  case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-  case '{': case '|': case '}': case '~':
-    break;
-
   default:
-    goto err;
+    break;
   }
 
 rtn:
@@ -514,6 +425,26 @@ xmlDecode(
   if (!d || !(b = s))
     return -1;
   for (; l--;) switch (*s) {
+  case '<':
+    if (l > 10
+     && *(s + 1) == '!'
+     && *(s + 2) == '['
+     && *(s + 3) == 'C'
+     && *(s + 4) == 'D'
+     && *(s + 5) == 'A'
+     && *(s + 6) == 'T'
+     && *(s + 7) == 'A'
+     && *(s + 8) == '[') {
+      for (s += 9, l -= 9; l; *d++ = *s++, l--)
+        if (*(s + 0) == ']'
+         && *(s + 1) == ']'
+         && *(s + 2) == '>') {
+          s += 3, l -= 2;
+          break;
+        }
+    } else
+      *d++ = *s++;
+    break;
   case '&':
     if (!(s++,l--)) goto rtn; else switch (*s) {
     case 'a':
