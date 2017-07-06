@@ -415,7 +415,7 @@ rtn:
 }
 
 int
-xmlDecode(
+xmlDecodeBody(
   char *d
  ,const char *s
  ,unsigned int l
@@ -611,4 +611,189 @@ endH:
 rtn:
   *d = '\0';
   return s - b;
+}
+
+char *
+xmlEncodeString(
+  const char *s
+ ,unsigned int l
+){
+  char *d;
+  void *t;
+  unsigned int n;
+
+  d = 0;
+  n = 0;
+  for (; l--;) switch (*s) {
+  case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
+  case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19:
+  default:
+    free(d);
+    return 0;
+    break;
+  case '\t': case '\n': case '\r':
+  case ' ': case '!': case '#': case '$': case '%': case'(': case')': case'*': case'+': case',': case'-': case'.': case'/':
+  case '0': case'1': case'2': case'3': case'4': case'5': case'6': case'7': case'8': case'9':
+  case ':': case';': case'=': case'?': case'@':
+  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M':
+  case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
+  case '[': case '\\': case ']': case '^': case '_': case '`':
+  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
+  case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+  case '~':
+    if (!(t = realloc(d, n + 2))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = *s++;
+    break;
+  case '&':
+    if (!(t = realloc(d, n + 6))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = '&';
+    *(d + n++) = 'a';
+    *(d + n++) = 'm';
+    *(d + n++) = 'p';
+    *(d + n++) = ';';
+    s++;
+    break;
+  case '\'':
+    if (!(t = realloc(d, n + 7))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = '&';
+    *(d + n++) = 'a';
+    *(d + n++) = 'p';
+    *(d + n++) = 'o';
+    *(d + n++) = 's';
+    *(d + n++) = ';';
+    s++;
+    break;
+  case '>':
+    if (!(t = realloc(d, n + 5))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = '&';
+    *(d + n++) = 'g';
+    *(d + n++) = 't';
+    *(d + n++) = ';';
+    s++;
+    break;
+  case '<':
+    if (!(t = realloc(d, n + 5))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = '&';
+    *(d + n++) = 'l';
+    *(d + n++) = 't';
+    *(d + n++) = ';';
+    s++;
+    break;
+  case '"':
+    if (!(t = realloc(d, n + 7))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = '&';
+    *(d + n++) = 'q';
+    *(d + n++) = 'u';
+    *(d + n++) = 'o';
+    *(d + n++) = 't';
+    *(d + n++) = ';';
+    s++;
+    break;
+  }
+  *(d + n) = '\0';
+  return d;
+}
+
+char *
+xmlEncodeCdata(
+  const char *s
+ ,unsigned int l
+){
+  static const char b[] = "<![CDATA[";
+  static const char e[] = "]]>";
+  char *d;
+  void *t;
+  unsigned int n;
+  unsigned int i;
+
+  if (!(d = malloc((sizeof(b) - 1) + 1)))
+    return d;
+  n = 0;
+  for (i = 0; i < sizeof(b) - 1; i++)
+    *(d + n++) = b[i];
+  for (; l--;) switch (*s) {
+  case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
+  case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19:
+  default:
+    free(d);
+    return 0;
+    break;
+  case '\t': case '\n': case '\r':
+  case ' ': case '!': case '"': case '#': case '$': case '%': case '&': case '\'':
+  case '(': case ')': case '*': case '+': case ',': case '-': case '.': case '/':
+  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+  case ':': case ';': case '<': case'=': case '>': case'?': case'@':
+  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M':
+  case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
+  case '[': case '\\': case '^': case '_': case '`':
+  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
+  case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+  case '~':
+    if (!(t = realloc(d, n + 2))) {
+      free(d);
+      return t;
+    }
+    d = t;
+    *(d + n++) = *s++;
+    break;
+  case ']':
+    if (l > 1
+     && *(s + 1) == ']'
+     && *(s + 2) == '>') {
+      if (!(t = realloc(d, n + 4 + (sizeof(e) - 1) + (sizeof(b) - 1)))) {
+        free(d);
+        return t;
+      }
+      d = t;
+      *(d + n++) = *s++;
+      *(d + n++) = *s++;
+      for (i = 0; i < sizeof(e) - 1; i++)
+        *(d + n++) = e[i];
+      for (i = 0; i < sizeof(b) - 1; i++)
+        *(d + n++) = b[i];
+      *(d + n++) = *s++;
+      l -= 2;
+    } else {
+      if (!(t = realloc(d, n + 2))) {
+        free(d);
+        return t;
+      }
+      d = t;
+      *(d + n++) = *s++;
+    }
+    break;
+  }
+  if (!(t = realloc(d, n + (sizeof(b) - 1) + 1))) {
+    free(d);
+    return t;
+  }
+  d = t;
+  for (i = 0; i < sizeof(e) - 1; i++)
+    *(d + n++) = e[i];
+  *(d + n) = '\0';
+  return d;
 }

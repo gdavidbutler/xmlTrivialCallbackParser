@@ -33,4 +33,28 @@ int xmlParse(xmlCb_t, const char *buf, void *userContext);
 /* return -1 on null dest or source else offset of last char decoded */
 /* dest must be one char longer than length */
 /* if return is not -1, then dest is '\0' terminated */
-int xmlDecode(char *dest, const char *source, unsigned int length);
+int xmlDecodeBody(char *dest, const char *source, unsigned int length);
+
+/* return 0 on out of memory or invalid string characters */
+/* returns allocated '\0' terminated buffer that must be free()'d */
+char *xmlEncodeString(const char *source, unsigned int length);
+
+/* return 0 on out of memory or invalid string characters */
+/* returns allocated '\0' terminated buffer that must be free()'d */
+char *xmlEncodeCdata(const char *source, unsigned int length);
+
+/*
+TODO:
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<foo type="xs:base64Binary">stuff</foo>
+
+int xmlDecodeBase64 (ignore whitespace \t\n\r)
+char *xmlEncodeBase64
+
+<foo type="xs:hexBinary">stuff</foo>
+
+int xmlDecodeHex (ignore whitespace \t\n\r)
+char *xmlEncodeHex (only uppercase)
+*/

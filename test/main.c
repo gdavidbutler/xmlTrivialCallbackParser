@@ -13,6 +13,8 @@ cb(
  ,const xmlSt_t *vl
  ,void *v
 ){
+  unsigned int i;
+
   (void)v;
   switch (typ) {
   case xmlTp_Eb:
@@ -29,8 +31,8 @@ cb(
       char *d;
 
       if (!(d = malloc(vl->l + 1))
-       || xmlDecode(d, vl->s, vl->l) != (int)vl->l)
-        printf(":\"%.*s\"=\"%.*s\"\n", nm->l, nm->s, vl->l, vl->s);
+       || (i = xmlDecodeBody(d, vl->s, vl->l)) != vl->l)
+        printf(":\"%.*s\"=\"%.*s\"(%u!=%u)\n", nm->l, nm->s, vl->l, vl->s, i, vl->l);
       else
         printf(":\"%.*s\"=\"%.*s\"(%s)\n", nm->l, nm->s, vl->l, vl->s, d);
       free(d);
@@ -44,8 +46,8 @@ cb(
       char *d;
 
       if (!(d = malloc(vl->l + 1))
-       || xmlDecode(d, vl->s, vl->l) != (int)vl->l)
-        printf("(%.*s)\n", vl->l, vl->s);
+       || (i = xmlDecodeBody(d, vl->s, vl->l)) != vl->l)
+        printf("(%.*s)(%u!=%u)\n", vl->l, vl->s, i, vl->l);
       else
         printf("(%.*s)(%s)\n", vl->l, vl->s, d);
       free(d);
@@ -70,12 +72,24 @@ main(
   int argc
  ,char *argv[]
 ){
+  static const char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
   int fd;
   int sz;
   char *bf;
 
+  if (argc == 2) {
+    if (!(bf = xmlEncodeString(enc, sizeof(enc) - 1)))
+      return 2;
+    printf("xmlEncodeString(%s)\n->\n%s\n", enc, bf);
+    free(bf);
+    if (!(bf = xmlEncodeCdata(enc, sizeof(enc) - 1)))
+      return 2;
+    printf("xmlEncodeCdata(%s)\n->\n%s\n", enc, bf);
+    free(bf);
+    return 0;
+  }
   if (argc != 3) {
-    fprintf(stderr, "Usage: %s [0|1] file\n", argv[0]);
+    fprintf(stderr, "Usage: %s any | 0|1 file\n", argv[0]);
     return 1;
   }
   if ((fd = open(argv[2], O_RDONLY)) < 0) {
@@ -91,9 +105,7 @@ main(
   }
   close(fd);
   bf[sz] = '\0';
-
   printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, bf, 0));
-
   free(bf);
   return 0;
 }
