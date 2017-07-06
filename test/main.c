@@ -30,6 +30,7 @@ cb(
     {
       char *d;
 
+      i = -1;
       if (!(d = malloc(vl->l + 1))
        || (i = xmlDecodeBody(d, vl->s, vl->l)) != vl->l)
         printf(":\"%.*s\"=\"%.*s\"(%u!=%u)\n", nm->l, nm->s, vl->l, vl->s, i, vl->l);
@@ -45,6 +46,7 @@ cb(
     {
       char *d;
 
+      i = -1;
       if (!(d = malloc(vl->l + 1))
        || (i = xmlDecodeBody(d, vl->s, vl->l)) != vl->l)
         printf("(%.*s)(%u!=%u)\n", vl->l, vl->s, i, vl->l);
@@ -73,6 +75,8 @@ main(
  ,char *argv[]
 ){
   static const char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
+  static const char b64[] = " Q m F z Z T Y 0 ";
+  static const unsigned char str[] = "Base64";
   int fd;
   int sz;
   char *bf;
@@ -82,9 +86,24 @@ main(
       return 2;
     printf("xmlEncodeString(%s)\n->\n%s\n", enc, bf);
     free(bf);
+    putchar('\n');
     if (!(bf = xmlEncodeCdata(enc, sizeof(enc) - 1)))
       return 2;
     printf("xmlEncodeCdata(%s)\n->\n%s\n", enc, bf);
+    free(bf);
+    putchar('\n');
+    sz = xmlDecodeBase64Need(sizeof(b64) - 1);
+    if (!(bf = malloc(sz)))
+      return 2;
+    sz = xmlDecodeBase64((unsigned char *)bf, sz, b64, sizeof(b64) - 1);
+    printf("xmlDecodeBase64(%s)\n->\n%.*s\n", b64, sz, bf);
+    free(bf);
+    putchar('\n');
+    sz = xmlEncodeBase64Need(sizeof(str) - 1);
+    if (!(bf = malloc(sz)))
+      return 2;
+    sz = xmlEncodeBase64(bf, sz, str, sizeof(str) - 1);
+    printf("xmlEncodeBase64(%s)\n->\n%.*s\n", str, sz, bf);
     free(bf);
     return 0;
   }

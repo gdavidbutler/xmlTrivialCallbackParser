@@ -797,3 +797,110 @@ xmlEncodeCdata(
   *(d + n) = '\0';
   return d;
 }
+
+int
+xmlDecodeBase64(
+  unsigned char *out
+ ,int outl
+ ,char const *in
+ ,int inl
+){
+  static unsigned char const b64[] = {
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 64, 64, 66,  66, 64, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    64, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 62,  66, 66, 66, 63,
+    52, 53, 54, 55,  56, 57, 58, 59,  60, 61, 66, 66,  66, 65, 66, 66,
+    66,  0,  1,  2,   3,  4,  5,  6,   7,  8,  9, 10,  11, 12, 13, 14,
+    15, 16, 17, 18,  19, 20, 21, 22,  23, 24, 25, 66,  66, 66, 66, 66,
+    66, 26, 27, 28,  29, 30, 31, 32,  33, 34, 35, 36,  37, 38, 39, 40,
+    41, 42, 43, 44,  45, 46, 47, 48,  49, 50, 51, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
+    66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66
+  };
+  unsigned char *base;
+  unsigned long buf;
+
+  base = out;
+  buf = 1;
+  while (inl-- > 0 && outl >= 3) {
+    unsigned char c;
+
+    switch ((c = b64[*(unsigned char*)in++])) {
+
+    case 66: /* invalid */
+      return out - base;
+      break;
+
+    case 64: /* whitespace */
+      continue;
+      break;
+
+    case 65: /* pad */
+      inl = 0;
+      break;
+
+    default:
+      buf = buf << 6 | c;
+      if (buf & 0x1000000) {
+
+        *out++ = buf >> 16;
+        *out++ = buf >> 8;
+        *out++ = buf;
+        outl -= 3;
+        buf = 1;
+      }
+      break;
+    }
+  }
+
+  if (outl >= 2 && buf & 0x40000) {
+
+    *out++ = buf >> 10;
+    *out++ = buf >> 2;
+  } else if (outl >= 1 && buf & 0x1000)
+    *out++ = buf >> 4;
+
+  return out - base;
+}
+
+int
+xmlEncodeBase64(
+  char *out
+ ,int outl
+ ,unsigned char const *in
+ ,int inl
+){
+  static const char b64[] =
+   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  char *base;
+
+  base = out;
+  for (; inl >= 3 && outl >= 4; in += 3, inl -= 3, outl -= 4) {
+
+    *out++ = b64[in[0] >> 2];
+    *out++ = b64[((in[0] << 4) & 0x30) | (in[1] >> 4)];
+    *out++ = b64[((in[1] << 2) & 0x3c) | (in[2] >> 6)];
+    *out++ = b64[in[2] & 0x3f];
+  }
+
+  if (inl > 0 && outl >= 4) {
+    unsigned char frag;
+
+    *out++ = b64[in[0] >> 2];
+    frag = (in[0] << 4) & 0x30;
+    if (inl > 1)
+        frag |= in[1] >> 4;
+    *out++ = b64[frag];
+    *out++ = (inl > 1) ? b64[(in[1] << 2) & 0x3c] : '=';
+    *out++ = '=';
+    outl -= 4;
+  }
+
+  return out - base;
+}

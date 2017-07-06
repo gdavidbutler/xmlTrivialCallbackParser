@@ -43,18 +43,24 @@ char *xmlEncodeString(const char *source, unsigned int length);
 /* returns allocated '\0' terminated buffer that must be free()'d */
 char *xmlEncodeCdata(const char *source, unsigned int length);
 
-/*
-TODO:
+/* For <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"> */
 
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+/* <foo type="xs:base64Binary"></foo> */
 
-<foo type="xs:base64Binary">stuff</foo>
+/* the minimum length of the out buffer */
+#define xmlDecodeBase64Need(inl) (((inl + 3) / 4) * 3)
 
-int xmlDecodeBase64 (ignore whitespace \t\n\r)
-char *xmlEncodeBase64
+/* returns the number of characters put in out */
+int xmlDecodeBase64(unsigned char *out, int outl, const char *in, int inl);
 
-<foo type="xs:hexBinary">stuff</foo>
+/* the minimum length of the out buffer */
+#define xmlEncodeBase64Need(inl) (((inl + 2) / 3) * 4)
 
+/* returns the number of characters put in out */
+int xmlEncodeBase64(char *out, int outl, const unsigned char *in, int inl);
+
+/* <foo type="xs:hexBinary">stuff</foo> */
+/* TODO
 int xmlDecodeHex (ignore whitespace \t\n\r)
 char *xmlEncodeHex (only uppercase)
 */
