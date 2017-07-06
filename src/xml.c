@@ -416,220 +416,260 @@ rtn:
 
 int
 xmlDecodeBody(
-  char *d
- ,const char *s
- ,unsigned int l
+  char *out
+ ,int olen
+ ,const char *in
+ ,int ilen
 ){
-  const char *b;
+  int len;
 
-  if (!d || !(b = s))
-    return -1;
-  for (; l--;) switch (*s) {
+  len = 0;
+  for (; ilen--;) switch (*in) {
   case '<':
-    if (l > 10
-     && *(s + 1) == '!'
-     && *(s + 2) == '['
-     && *(s + 3) == 'C'
-     && *(s + 4) == 'D'
-     && *(s + 5) == 'A'
-     && *(s + 6) == 'T'
-     && *(s + 7) == 'A'
-     && *(s + 8) == '[') {
-      for (s += 9, l -= 9; l; *d++ = *s++, l--)
-        if (*(s + 0) == ']'
-         && *(s + 1) == ']'
-         && *(s + 2) == '>') {
-          s += 3, l -= 2;
+    if (ilen > 10
+     && *(in + 1) == '!'
+     && *(in + 2) == '['
+     && *(in + 3) == 'C'
+     && *(in + 4) == 'D'
+     && *(in + 5) == 'A'
+     && *(in + 6) == 'T'
+     && *(in + 7) == 'A'
+     && *(in + 8) == '[') {
+      for (in += 9, ilen -= 9; ilen; ilen--, in++, len++)
+        if (olen > 0) {
+          *out++ = *in;
+          olen--;
+        }
+        if (*(in + 0) == ']'
+         && *(in + 1) == ']'
+         && *(in + 2) == '>') {
+          in += 3, ilen -= 2;
           break;
         }
-    } else
-      *d++ = *s++;
+    } else {
+      if (olen > 0) {
+        *out++ = *in;
+        olen--;
+      }
+      in++;
+      len++;
+    }
     break;
   case '&':
-    if (!(s++,l--)) goto rtn; else switch (*s) {
+    if (!(in++,ilen--)) goto err; else switch (*in) {
     case 'a':
-      if (!(s++,l--)) goto rtn; else switch (*s) {
+      if (!(in++,ilen--)) goto err; else switch (*in) {
       case 'm':
-        if (!(s++,l--)) goto rtn; else switch (*s) {
+        if (!(in++,ilen--)) goto err; else switch (*in) {
         case 'p':
-          if (!(s++,l--)) goto rtn; else switch (*s) {
+          if (!(in++,ilen--)) goto err; else switch (*in) {
           case ';':
-            s++;
-            *d++ = '&';
+            if (olen > 0) {
+              *out++ = '&';
+              olen--;
+            }
+            in++;
+            len++;
             continue;
           default:
-            goto rtn;
+            goto err;
           }
         default:
-          goto rtn;
+          goto err;
         }
       case 'p':
-        if (!(s++,l--)) goto rtn; else switch (*s) {
+        if (!(in++,ilen--)) goto err; else switch (*in) {
         case 'o':
-          if (!(s++,l--)) goto rtn; else switch (*s) {
+          if (!(in++,ilen--)) goto err; else switch (*in) {
           case 's':
-            if (!(s++,l--)) goto rtn; else switch (*s) {
+            if (!(in++,ilen--)) goto err; else switch (*in) {
             case ';':
-              s++;
-              *d++ = '\'';
+              if (olen > 0) {
+                *out++ = '\'';
+                olen--;
+              }
+              in++;
+              len++;
               continue;
             default:
-              goto rtn;
+              goto err;
             }
           default:
-            goto rtn;
+            goto err;
           }
         default:
-          goto rtn;
+          goto err;
         }
       default:
-        goto rtn;
+        goto err;
       }
     case 'g':
-      if (!(s++,l--)) goto rtn; else switch (*s) {
+      if (!(in++,ilen--)) goto err; else switch (*in) {
       case 't':
-        if (!(s++,l--)) goto rtn; else switch (*s) {
+        if (!(in++,ilen--)) goto err; else switch (*in) {
         case ';':
-          s++;
-          *d++ = '>';
+          if (olen > 0) {
+            *out++ = '>';
+            olen--;
+          }
+          in++;
+          len++;
           continue;
         default:
-          goto rtn;
+          goto err;
         }
       default:
-        goto rtn;
+        goto err;
       }
     case 'l':
-      if (!(s++,l--)) goto rtn; else switch (*s) {
+      if (!(in++,ilen--)) goto err; else switch (*in) {
       case 't':
-        if (!(s++,l--)) goto rtn; else switch (*s) {
+        if (!(in++,ilen--)) goto err; else switch (*in) {
         case ';':
-          s++;
-          *d++ = '<';
+          if (olen > 0) {
+            *out++ = '<';
+            olen--;
+          }
+          in++;
+          len++;
           continue;
         default:
-          goto rtn;
+          goto err;
         }
       default:
-        goto rtn;
+        goto err;
       }
     case 'q':
-      if (!(s++,l--)) goto rtn; else switch (*s) {
+      if (!(in++,ilen--)) goto err; else switch (*in) {
       case 'u':
-        if (!(s++,l--)) goto rtn; else switch (*s) {
+        if (!(in++,ilen--)) goto err; else switch (*in) {
         case 'o':
-          if (!(s++,l--)) goto rtn; else switch (*s) {
+          if (!(in++,ilen--)) goto err; else switch (*in) {
           case 't':
-            if (!(s++,l--)) goto rtn; else switch (*s) {
+            if (!(in++,ilen--)) goto err; else switch (*in) {
             case ';':
-              s++;
-              *d++ = '"';
+              if (olen > 0) {
+                *out++ = '"';
+                olen--;
+              }
+              in++;
+              len++;
               continue;
             default:
-              goto rtn;
+              goto err;
             }
           default:
-            goto rtn;
+            goto err;
           }
         default:
-          goto rtn;
+          goto err;
         }
       default:
-        goto rtn;
+        goto err;
       }
     case '#':
-      if (!(s++,l--)) goto rtn; else switch (*s) {
+      if (!(in++,ilen--)) goto err; else switch (*in) {
         int c;
 
       case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-        c = *s - '0';
-        for (s++; l; s++, l--) switch (*s) {
+        c = *in - '0';
+        for (in++; ilen; in++, ilen--) switch (*in) {
         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
           c *= 10;
-          c += *s - '0';
+          c += *in - '0';
           break;
         case ';':
           goto endD;
         default:
-          goto rtn;
+          goto err;
         }
 endD:
-        if (!l--)
-          goto rtn;
-        s++;
-        *d++ = c;
+        if (!ilen--)
+          goto err;
+        if (olen > 0) {
+          *out++ = c;
+          olen--;
+        }
+        in++;
+        len++;
         continue;
       case 'x':
-        if (!(s++,l--)) goto rtn; else switch (*s) {
+        if (!(in++,ilen--)) goto err; else switch (*in) {
         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-          c = *s - '0';
+          c = *in - '0';
           goto bgnH;
         case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-          c = 10 + (*s - 'A');
+          c = 10 + (*in - 'A');
           goto bgnH;
         case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-          c = 10 + (*s - 'a');
+          c = 10 + (*in - 'a');
 bgnH:
-          for (s++; l; s++, l--) switch (*s) {
+          for (in++; ilen; in++, ilen--) switch (*in) {
           case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
             c *= 16;
-            c += *s - '0';
+            c += *in - '0';
             break;
           case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
             c *= 16;
-            c += 10 + (*s - 'A');
+            c += 10 + (*in - 'A');
             break;
           case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
             c *= 16;
-            c += 10 + (*s - 'a');
+            c += 10 + (*in - 'a');
             break;
           case ';':
             goto endH;
           default:
-            goto rtn;
+            goto err;
           }
 endH:
-          if (!l--)
-            goto rtn;
-          s++;
-          *d++ = c;
+          if (!ilen--)
+            goto err;
+          if (olen > 0) {
+            *out++ = c;
+            olen--;
+          }
+          in++;
+          len++;
           continue;
         default:
-          goto rtn;
+          goto err;
         }
       default:
-        goto rtn;
+        goto err;
       }
     default:
-      goto rtn;
+      goto err;
     }
   default:
-    *d++ = *s++;
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
+    }
+    in++;
+    len++;
     break;
   }
-
-rtn:
-  *d = '\0';
-  return s - b;
+  return len;
+err:
+  return -1;
 }
 
-char *
+int
 xmlEncodeString(
-  const char *s
- ,unsigned int l
+  char *out
+ ,int olen
+ ,const char *in
+ ,int ilen
 ){
-  char *d;
-  void *t;
-  unsigned int n;
+  int len;
 
-  d = 0;
-  n = 0;
-  for (; l--;) switch (*s) {
+  len = 0;
+  for (; ilen--;) switch (*in) {
   case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
   case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19:
   default:
-    free(d);
-    return 0;
+    return -1;
     break;
   case '\t': case '\n': case '\r':
   case ' ': case '!': case '#': case '$': case '%': case'(': case')': case'*': case'+': case',': case'-': case'.': case'/':
@@ -641,106 +681,100 @@ xmlEncodeString(
   case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
   case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
   case '~':
-    if (!(t = realloc(d, n + 2))) {
-      free(d);
-      return t;
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
     }
-    d = t;
-    *(d + n++) = *s++;
+    in++;
+    len++;
     break;
   case '&':
-    if (!(t = realloc(d, n + 6))) {
-      free(d);
-      return t;
+    if (olen > 4) {
+      *out++ = '&';
+      *out++ = 'a';
+      *out++ = 'm';
+      *out++ = 'p';
+      *out++ = ';';
+      olen -= 5;
     }
-    d = t;
-    *(d + n++) = '&';
-    *(d + n++) = 'a';
-    *(d + n++) = 'm';
-    *(d + n++) = 'p';
-    *(d + n++) = ';';
-    s++;
+    in++;
+    len += 5;
     break;
   case '\'':
-    if (!(t = realloc(d, n + 7))) {
-      free(d);
-      return t;
+    if (olen > 5) {
+      *out++ = '&';
+      *out++ = 'a';
+      *out++ = 'p';
+      *out++ = 'o';
+      *out++ = 's';
+      *out++ = ';';
+      olen -= 6;
     }
-    d = t;
-    *(d + n++) = '&';
-    *(d + n++) = 'a';
-    *(d + n++) = 'p';
-    *(d + n++) = 'o';
-    *(d + n++) = 's';
-    *(d + n++) = ';';
-    s++;
+    in++;
+    len += 6;
     break;
   case '>':
-    if (!(t = realloc(d, n + 5))) {
-      free(d);
-      return t;
+    if (olen > 3) {
+      *out++ = '&';
+      *out++ = 'g';
+      *out++ = 't';
+      *out++ = ';';
+      olen -= 4;
     }
-    d = t;
-    *(d + n++) = '&';
-    *(d + n++) = 'g';
-    *(d + n++) = 't';
-    *(d + n++) = ';';
-    s++;
+    in++;
+    len += 4;
     break;
   case '<':
-    if (!(t = realloc(d, n + 5))) {
-      free(d);
-      return t;
+    if (olen > 3) {
+      *out++ = '&';
+      *out++ = 'l';
+      *out++ = 't';
+      *out++ = ';';
+      olen -= 4;
     }
-    d = t;
-    *(d + n++) = '&';
-    *(d + n++) = 'l';
-    *(d + n++) = 't';
-    *(d + n++) = ';';
-    s++;
+    in++;
+    len += 4;
     break;
   case '"':
-    if (!(t = realloc(d, n + 7))) {
-      free(d);
-      return t;
+    if (olen > 5) {
+      *out++ = '&';
+      *out++ = 'q';
+      *out++ = 'u';
+      *out++ = 'o';
+      *out++ = 't';
+      *out++ = ';';
+      olen -= 6;
     }
-    d = t;
-    *(d + n++) = '&';
-    *(d + n++) = 'q';
-    *(d + n++) = 'u';
-    *(d + n++) = 'o';
-    *(d + n++) = 't';
-    *(d + n++) = ';';
-    s++;
+    in++;
+    len += 6;
     break;
   }
-  *(d + n) = '\0';
-  return d;
+  return len;
 }
 
-char *
+int
 xmlEncodeCdata(
-  const char *s
- ,unsigned int l
+  char *out
+ ,int olen
+ ,const char *in
+ ,int ilen
 ){
   static const char b[] = "<![CDATA[";
   static const char e[] = "]]>";
-  char *d;
-  void *t;
-  unsigned int n;
+  int len;
   unsigned int i;
 
-  if (!(d = malloc((sizeof(b) - 1) + 1)))
-    return d;
-  n = 0;
-  for (i = 0; i < sizeof(b) - 1; i++)
-    *(d + n++) = b[i];
-  for (; l--;) switch (*s) {
+  len = 0;
+  for (i = 0; i < sizeof(b) - 1; i++, len++)
+    if (olen > 0) {
+      *out++ = b[i];
+      olen--;
+    }
+  for (; ilen--;) switch (*in) {
   case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
   case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19:
   default:
-    free(d);
-    return 0;
+    return -1;
     break;
   case '\t': case '\n': case '\r':
   case ' ': case '!': case '"': case '#': case '$': case '%': case '&': case '\'':
@@ -753,57 +787,70 @@ xmlEncodeCdata(
   case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
   case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
   case '~':
-    if (!(t = realloc(d, n + 2))) {
-      free(d);
-      return t;
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
     }
-    d = t;
-    *(d + n++) = *s++;
+    in++;
+    len++;
     break;
   case ']':
-    if (l > 1
-     && *(s + 1) == ']'
-     && *(s + 2) == '>') {
-      if (!(t = realloc(d, n + 4 + (sizeof(e) - 1) + (sizeof(b) - 1)))) {
-        free(d);
-        return t;
+    if (ilen > 1
+     && *(in + 1) == ']'
+     && *(in + 2) == '>') {
+      if (olen > 0) {
+        *out++ = *in;
+        olen--;
       }
-      d = t;
-      *(d + n++) = *s++;
-      *(d + n++) = *s++;
-      for (i = 0; i < sizeof(e) - 1; i++)
-        *(d + n++) = e[i];
-      for (i = 0; i < sizeof(b) - 1; i++)
-        *(d + n++) = b[i];
-      *(d + n++) = *s++;
-      l -= 2;
+      in++;
+      len++;
+      if (olen > 0) {
+        *out++ = *in;
+        olen--;
+      }
+      in++;
+      len++;
+      for (i = 0; i < sizeof(e) - 1; i++, len++)
+        if (olen > 0) {
+          *out++ = e[i];
+          olen--;
+        }
+      for (i = 0; i < sizeof(b) - 1; i++, len++)
+        if (olen > 0) {
+          *out++ = b[i];
+          olen--;
+        }
+      if (olen > 0) {
+        *out++ = *in;
+        olen--;
+      }
+      in++;
+      len++;
+      ilen -= 2;
     } else {
-      if (!(t = realloc(d, n + 2))) {
-        free(d);
-        return t;
+      if (olen > 0) {
+        *out++ = *in;
+        olen--;
       }
-      d = t;
-      *(d + n++) = *s++;
+      in++;
+      len++;
     }
     break;
   }
-  if (!(t = realloc(d, n + (sizeof(b) - 1) + 1))) {
-    free(d);
-    return t;
-  }
-  d = t;
-  for (i = 0; i < sizeof(e) - 1; i++)
-    *(d + n++) = e[i];
-  *(d + n) = '\0';
-  return d;
+  for (i = 0; i < sizeof(e) - 1; i++, len++)
+    if (olen > 0) {
+      *out++ = e[i];
+      olen--;
+    }
+  return len;
 }
 
 int
 xmlDecodeBase64(
   unsigned char *out
- ,int outl
+ ,int olen
  ,char const *in
- ,int inl
+ ,int ilen
 ){
   static unsigned char const b64[] = {
     66, 66, 66, 66,  66, 66, 66, 66,  66, 64, 64, 66,  66, 64, 66, 66,
@@ -823,84 +870,86 @@ xmlDecodeBase64(
     66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
     66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66
   };
-  unsigned char *base;
   unsigned long buf;
+  int len;
 
-  base = out;
   buf = 1;
-  while (inl-- > 0 && outl >= 3) {
+  len = 0;
+  while (ilen-- > 0) {
     unsigned char c;
 
     switch ((c = b64[*(unsigned char*)in++])) {
-
     case 66: /* invalid */
-      return out - base;
+      return -1;
       break;
-
     case 64: /* whitespace */
       continue;
       break;
-
     case 65: /* pad */
-      inl = 0;
+      ilen = 0;
       break;
-
     default:
       buf = buf << 6 | c;
       if (buf & 0x1000000) {
-
-        *out++ = buf >> 16;
-        *out++ = buf >> 8;
-        *out++ = buf;
-        outl -= 3;
+        if (olen >= 3) {
+          *out++ = buf >> 16;
+          *out++ = buf >> 8;
+          *out++ = buf;
+          olen -= 3;
+        }
+        len += 3;
         buf = 1;
       }
       break;
     }
   }
-
-  if (outl >= 2 && buf & 0x40000) {
-
-    *out++ = buf >> 10;
-    *out++ = buf >> 2;
-  } else if (outl >= 1 && buf & 0x1000)
-    *out++ = buf >> 4;
-
-  return out - base;
+  if (buf & 0x40000) {
+    if (olen >= 2) {
+      *out++ = buf >> 10;
+      *out++ = buf >> 2;
+    }
+    len += 2;
+  } else if (buf & 0x1000) {
+    if (olen >= 1)
+      *out++ = buf >> 4;
+    len++;
+  }
+  return len;
 }
 
 int
 xmlEncodeBase64(
   char *out
- ,int outl
+ ,int olen
  ,unsigned char const *in
- ,int inl
+ ,int ilen
 ){
   static const char b64[] =
    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  char *base;
+  int len;
 
-  base = out;
-  for (; inl >= 3 && outl >= 4; in += 3, inl -= 3, outl -= 4) {
-
-    *out++ = b64[in[0] >> 2];
-    *out++ = b64[((in[0] << 4) & 0x30) | (in[1] >> 4)];
-    *out++ = b64[((in[1] << 2) & 0x3c) | (in[2] >> 6)];
-    *out++ = b64[in[2] & 0x3f];
+  for (len = 0; ilen >= 3; in += 3, ilen -= 3, len += 4) {
+    if (olen >= 4) {
+      *out++ = b64[in[0] >> 2];
+      *out++ = b64[((in[0] << 4) & 0x30) | (in[1] >> 4)];
+      *out++ = b64[((in[1] << 2) & 0x3c) | (in[2] >> 6)];
+      *out++ = b64[in[2] & 0x3f];
+      olen -= 4;
+    }
   }
+  if (ilen) {
+    if (olen >= 4) {
+      unsigned char frag;
 
-  if (inl > 0 && outl >= 4) {
-    unsigned char frag;
-
-    *out++ = b64[in[0] >> 2];
-    frag = (in[0] << 4) & 0x30;
-    if (inl > 1)
-        frag |= in[1] >> 4;
-    *out++ = b64[frag];
-    *out++ = (inl > 1) ? b64[(in[1] << 2) & 0x3c] : '=';
-    *out++ = '=';
-    outl -= 4;
+      *out++ = b64[in[0] >> 2];
+      frag = (in[0] << 4) & 0x30;
+      if (ilen > 1)
+          frag |= in[1] >> 4;
+      *out++ = b64[frag];
+      *out++ = (ilen > 1) ? b64[(in[1] << 2) & 0x3c] : '=';
+      *out++ = '=';
+    }
+    len += 4;
   }
-
-  return out - base;
+  return len;
 }

@@ -27,37 +27,39 @@ typedef void (*xmlCb_t)(
  ,void *userContext
 );
 
-/* return -1 on null buf else offset of last char parsed */
+/* return -1 on error else offset of last char parsed */
+/* buf must be null terminated */
 int xmlParse(xmlCb_t, const char *buf, void *userContext);
 
-/* return -1 on null dest or source else offset of last char decoded */
-/* dest must be one char longer than length */
-/* if return is not -1, then dest is '\0' terminated */
-int xmlDecodeBody(char *dest, const char *source, unsigned int length);
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlDecodeBody(char *out, int olen, const char *in, int ilen);
 
-/* return 0 on out of memory or invalid string characters */
-/* returns allocated '\0' terminated buffer that must be free()'d */
-char *xmlEncodeString(const char *source, unsigned int length);
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlEncodeString(char *out, int olen, const char *in, int ilen);
 
-/* return 0 on out of memory or invalid string characters */
-/* returns allocated '\0' terminated buffer that must be free()'d */
-char *xmlEncodeCdata(const char *source, unsigned int length);
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlEncodeCdata(char *out, int olen, const char *in, int ilen);
 
 /* For <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"> */
 
 /* <foo type="xs:base64Binary"></foo> */
 
-/* the minimum length of the out buffer */
+/* estimated length of needed out buffer */
 #define xmlDecodeBase64Need(inl) (((inl + 3) / 4) * 3)
 
-/* returns the number of characters put in out */
-int xmlDecodeBase64(unsigned char *out, int outl, const char *in, int inl);
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlDecodeBase64(unsigned char *out, int olen, const char *in, int ilen);
 
-/* the minimum length of the out buffer */
+/* estimated length of needed out buffer */
 #define xmlEncodeBase64Need(inl) (((inl + 2) / 3) * 4)
 
-/* returns the number of characters put in out */
-int xmlEncodeBase64(char *out, int outl, const unsigned char *in, int inl);
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlEncodeBase64(char *out, int olen, const unsigned char *in, int ilen);
 
 /* <foo type="xs:hexBinary">stuff</foo> */
 /* TODO
