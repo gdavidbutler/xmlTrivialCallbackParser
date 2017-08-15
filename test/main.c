@@ -78,7 +78,9 @@ main(
 ){
   static const char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
   static const char b64[] = "QmFzZTY0";
-  static const unsigned char str[] = "Base64";
+  static const unsigned char s64[] = "Base64";
+  static const char hex[] = "486578";
+  static const unsigned char shx[] = "Hex";
   int fd;
   int sz;
   char *bf;
@@ -98,9 +100,17 @@ main(
       return 2;
     printf("xmlDecodeBase64(%s)\n->\n%.*s\n", b64, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeBase64(bf, BUFSIZ, str, sizeof(str) - 1)) > BUFSIZ)
+    if ((sz = xmlEncodeBase64(bf, BUFSIZ, s64, sizeof(s64) - 1)) > BUFSIZ)
       return 2;
-    printf("xmlEncodeBase64(%s)\n->\n%.*s\n", str, sz, bf);
+    printf("xmlEncodeBase64(%s)\n->\n%.*s\n", s64, sz, bf);
+    putchar('\n');
+    if ((sz = xmlDecodeHex((unsigned char *)bf, BUFSIZ, hex, sizeof(hex) - 1)) > BUFSIZ)
+      return 2;
+    printf("xmlDecodeHex(%s)\n->\n%.*s\n", hex, sz, bf);
+    putchar('\n');
+    if ((sz = xmlEncodeHex(bf, BUFSIZ, shx, sizeof(shx) - 1)) > BUFSIZ)
+      return 2;
+    printf("xmlEncodeHex(%s)\n->\n%.*s\n", shx, sz, bf);
     free(bf);
     return 0;
   }

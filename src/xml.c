@@ -978,10 +978,8 @@ xmlDecodeBase64(
     switch ((c = b64[*(unsigned char*)in++])) {
     case 66: /* invalid */
       return -1;
-      break;
     case 64: /* whitespace */
       continue;
-      break;
     case 65: /* pad */
       ilen = 0;
       break;
@@ -1047,6 +1045,83 @@ xmlEncodeBase64(
       *out++ = '=';
     }
     len += 4;
+  }
+  return len;
+}
+
+int
+xmlDecodeHex(
+  unsigned char *out
+ ,int olen
+ ,char const *in
+ ,int ilen
+){
+  static unsigned char const hex[] = {
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 16, 16, 17,  17, 16, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    16, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+     0,  1,  2,  3,   4,  5,  6,  7,   8,  9, 17, 17,  17, 17, 17, 17,
+    17, 10, 11, 12,  13, 14, 15, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 10, 11, 12,  13, 14, 15, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
+    17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17
+  };
+  unsigned long buf;
+  int len;
+
+  buf = 1;
+  len = 0;
+  while (ilen-- > 0) {
+    unsigned char c;
+
+    switch ((c = hex[*(unsigned char*)in++])) {
+    case 17: /* invalid */
+      return -1;
+    case 16: /* whitespace */
+      continue;
+    default:
+      buf = buf << 4 | c;
+      if (buf & 0x100) {
+        if (olen > 0) {
+          *out++ = buf;
+          olen--;
+        }
+        len++;
+        buf = 1;
+      }
+      break;
+    }
+  }
+  if (buf != 1)
+    return -1;
+  return len;
+}
+
+int
+xmlEncodeHex(
+  char *out
+ ,int olen
+ ,unsigned char const *in
+ ,int ilen
+){
+  static const char hex[] =
+   "0123456789ABCDEF";
+  int len;
+
+  for (len = 0; ilen > 0; in++, ilen--, len += 2) {
+    if (olen > 1) {
+      *out++ = hex[*in >> 4];
+      *out++ = hex[*in & 0x0f];
+      olen -= 2;
+    }
   }
   return len;
 }

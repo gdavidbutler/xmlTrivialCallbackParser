@@ -61,8 +61,12 @@ int xmlDecodeBase64(unsigned char *out, int olen, const char *in, int ilen);
 /* if length returned is more than length provided, allocate needed memory and retry */
 int xmlEncodeBase64(char *out, int olen, const unsigned char *in, int ilen);
 
-/* <foo type="xs:hexBinary">stuff</foo> */
-/* TODO
-int xmlDecodeHex (ignore whitespace \t\n\r)
-char *xmlEncodeHex (only uppercase)
-*/
+/* <foo type="xs:hexBinary"></foo> */
+
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlDecodeHex(unsigned char *out, int olen, const char *in, int ilen);
+
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlEncodeHex(char *out, int olen, const unsigned char *in, int ilen);
