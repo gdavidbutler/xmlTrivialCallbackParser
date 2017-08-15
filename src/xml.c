@@ -20,12 +20,16 @@ xmlParse(
   xmlSt_t *tg;
   xmlSt_t nm;
   xmlSt_t vl;
+  int inXml;
+  int inDoctype;
   char ers[32];
 
   if (!(b = s))
     return -1;
   tgD = tgL = tgM = 0;
   tg = 0;
+  inXml = 0;
+  inDoctype = 0;
 
 tgEnd:
   vl.s = s;
@@ -94,14 +98,35 @@ nlAtrVal:
   case '\'':
     goto atrValSq;
 
-  case '/': case '?':
-    goto nlTg;
+  case '/':
+    if (inXml)
+      goto atr;
+    else
+      goto nlTg;
+
+  case '?':
+    if (inXml) {
+      inXml--;
+      goto nlTg;
+    } else
+      goto atr;
 
   case '<':
     goto err;
 
   case '>':
-    goto tgEnd;
+    if (inDoctype) {
+      inDoctype--;
+      s--;
+      goto nlTg;
+    } else
+      goto tgEnd;
+
+  case '[':
+    if (inDoctype)
+      goto tgEnd;
+    else
+      goto atr;
 
   default:
     goto atr;
@@ -116,9 +141,6 @@ atrNm:
 
   case '\t': case '\n': case '\r': case ' ':
     break;
-
-  case '"': case '\'': case '/': case '>':
-    goto nlAtrVal;
 
   case '<':
     goto err;
@@ -137,7 +159,7 @@ atr:
     goto rtn;
 
   case '\t': case '\n': case '\r': case ' ':
-  case '"': case '\'': case '/': case '=': case '>':
+  case '"': case '\'': case '/': case '?': case '=': case '>':
     goto atrNm;
 
   case '<':
@@ -169,16 +191,34 @@ atrVal:
     goto atrValSq;
 
   case '/':
-    goto nlTg;
+    if (inXml)
+      goto atr;
+    else
+      goto nlTg;
+
+  case '?':
+    if (inXml) {
+      inXml--;
+      goto nlTg;
+    } else
+      goto atr;
 
   case '<': case '=':
     goto err;
 
   case '>':
-    goto tgEnd;
+    if (inDoctype) {
+      inDoctype--;
+      s--;
+      goto nlTg;
+    } else
+      goto tgEnd;
 
-  case '?':
-    goto nlTg;
+  case '[':
+    if (inDoctype)
+      goto tgEnd;
+    else
+      goto atr;
 
   default:
     goto atr;
@@ -286,6 +326,22 @@ eTg:
 
 sTgNm:
   (tg + tgL)->l = s - (tg + tgL)->s - 1;
+  if ((tg + tgL)->l == 4
+   && *((tg + tgL)->s + 0) == '?'
+   && *((tg + tgL)->s + 1) == 'x'
+   && *((tg + tgL)->s + 2) == 'm'
+   && *((tg + tgL)->s + 3) == 'l')
+    inXml = 1;
+  else if ((tg + tgL)->l == 8
+   && *((tg + tgL)->s + 0) == '!'
+   && *((tg + tgL)->s + 1) == 'D'
+   && *((tg + tgL)->s + 2) == 'O'
+   && *((tg + tgL)->s + 3) == 'C'
+   && *((tg + tgL)->s + 4) == 'T'
+   && *((tg + tgL)->s + 5) == 'Y'
+   && *((tg + tgL)->s + 6) == 'P'
+   && *((tg + tgL)->s + 7) == 'E')
+    inDoctype = 1;
   tgD = tgL++;
   if (cb)
     cb(xmlTp_Eb, tgL, tg, 0, 0, v);
@@ -304,16 +360,34 @@ sTgNm:
     goto atrValSq;
 
   case '/':
-    goto nlTg;
+    if (inXml)
+      goto atr;
+    else
+      goto nlTg;
+
+  case '?':
+    if (inXml) {
+      inXml--;
+      goto nlTg;
+    } else
+      goto atr;
 
   case '<': case '=':
     goto err;
 
   case '>':
-    goto tgEnd;
+    if (inDoctype) {
+      inDoctype--;
+      s--;
+      goto nlTg;
+    } else
+      goto tgEnd;
 
-  case '?':
-    goto nlTg;
+  case '[':
+    if (inDoctype)
+      goto tgEnd;
+    else
+      goto atr;
 
   default:
     goto atr;
@@ -329,13 +403,28 @@ sNm:
     tgM++;
   }
   (tg + tgL)->s = s - 1;
+  if (inDoctype)
+    inDoctype++;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
 
   case '\t': case '\n': case '\r': case ' ':
-  case '"': case '\'': case '/': case '>': case '?':
+  case '"': case '\'': case '>':
     goto sTgNm;
+
+  case '/':
+    if (inXml)
+      break;
+    else
+      goto sTgNm;
+
+  case '?':
+    if (inXml) {
+      inXml--;
+      goto sTgNm;
+    } else
+      break;
 
   case '<':
     goto err;
@@ -404,6 +493,14 @@ bgn:
       goto rtn;
     }
     goto sTg;
+
+  case '>':
+    if (inDoctype) {
+      inDoctype--;
+      s--;
+      goto nlTg;
+    } else
+      break;
 
   default:
     break;

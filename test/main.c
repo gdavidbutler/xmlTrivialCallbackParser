@@ -32,8 +32,9 @@ cb(
 
       i = -1;
       if (!(d = malloc(vl->l))
-       || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) > (int)vl->l)
-        printf(":\"%.*s\"=\"%.*s\"(%u>%u)\n", nm->l, nm->s, vl->l, vl->s, i, vl->l);
+       || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
+       || i > (int)vl->l)
+        printf(":\"%.*s\"=\"%.*s\"(%d:%u)\n", nm->l, nm->s, vl->l, vl->s, i, vl->l);
       else
         printf(":\"%.*s\"=\"%.*s\"(%.*s)\n", nm->l, nm->s, vl->l, vl->s, i, d);
       free(d);
@@ -48,8 +49,9 @@ cb(
 
       i = -1;
       if (!(d = malloc(vl->l))
-       || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) > (int)vl->l)
-        printf("(%.*s)(%u!=%u)\n", vl->l, vl->s, i, vl->l);
+       || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
+       || i > (int)vl->l)
+        printf("(%.*s)(%d:%u)\n", vl->l, vl->s, i, vl->l);
       else
         printf("(%.*s)(%.*s)\n", vl->l, vl->s, i, d);
       free(d);
