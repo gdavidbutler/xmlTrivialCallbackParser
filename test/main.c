@@ -77,6 +77,8 @@ main(
  ,char *argv[]
 ){
   static const char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
+  static const char uri[] = "http%3A%2F%2Ffoo.bar%23foo%3Ffoo%3Db%2Ba%2Br%26bar%3Df%20o%20o";
+  static const unsigned char sur[] = "http://foo.bar#foo?foo=b+a+r&bar=f o o";
   static const char b64[] = "QmFzZTY0";
   static const unsigned char s64[] = "Base64";
   static const char hex[] = "486578";
@@ -95,6 +97,14 @@ main(
     if ((sz = xmlEncodeCdata(bf, BUFSIZ, enc, sizeof(enc) - 1)) > BUFSIZ)
       return 2;
     printf("xmlEncodeCdata(%s)\n->\n%.*s\n", enc, sz, bf);
+    putchar('\n');
+    if ((sz = xmlDecodeUri((unsigned char *)bf, BUFSIZ, uri, sizeof(uri) - 1)) > BUFSIZ)
+      return 2;
+    printf("xmlDecodeUri(%s)\n->\n%.*s\n", uri, sz, bf);
+    putchar('\n');
+    if ((sz = xmlEncodeUri(bf, BUFSIZ, sur, sizeof(sur) - 1)) > BUFSIZ)
+      return 2;
+    printf("xmlEncodeUri(%s)\n->\n%.*s\n", sur, sz, bf);
     putchar('\n');
     if ((sz = xmlDecodeBase64((unsigned char *)bf, BUFSIZ, b64, sizeof(b64) - 1)) > BUFSIZ)
       return 2;

@@ -45,6 +45,16 @@ int xmlEncodeCdata(char *out, int olen, const char *in, int ilen);
 
 /* For <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"> */
 
+/* <foo type="xs:anyURI"></foo> */
+
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlDecodeUri(unsigned char *out, int olen, const char *in, int ilen);
+
+/* return -1 on error else the length of out */
+/* if length returned is more than length provided, allocate needed memory and retry */
+int xmlEncodeUri(char *out, int olen, const unsigned char *in, int ilen);
+
 /* <foo type="xs:base64Binary"></foo> */
 
 /* estimated length of needed out buffer */

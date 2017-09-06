@@ -943,6 +943,110 @@ xmlEncodeCdata(
 }
 
 int
+xmlDecodeUri(
+  unsigned char *out
+ ,int olen
+ ,const char *in
+ ,int ilen
+){
+  int len;
+  int c;
+
+  len = 0;
+  for (; ilen--;) switch (*in) {
+  case '%':
+    if (!(in++,ilen--)) goto err; else switch (*in) {
+    case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+      c = *in - '0';
+      goto nxt;
+    case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+      c = 10 + (*in - 'A');
+      goto nxt;
+    case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+      c = 10 + (*in - 'a');
+nxt:
+      if (!(in++,ilen--)) goto err; else switch (*in) {
+      case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+        c *= 16;
+        c += *in - '0';
+        break;
+      case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+        c *= 16;
+        c += 10 + (*in - 'A');
+        break;
+      case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+        c *= 16;
+        c += 10 + (*in - 'a');
+        break;
+      default:
+        goto err;
+      }
+      if (olen > 0) {
+        *out++ = c;
+        olen--;
+      }
+      in++;
+      len++;
+      break;
+    default:
+      goto err;
+    }
+    break;
+  default:
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
+    }
+    in++;
+    len++;
+    break;
+  }
+  return len;
+err:
+  return -1;
+}
+
+int
+xmlEncodeUri(
+  char *out
+ ,int olen
+ ,const unsigned char *in
+ ,int ilen
+){
+  static const char hex[] = "0123456789ABCDEF";
+  int len;
+
+  len = 0;
+  for (; ilen--;) switch (*in) { case '-': case '.':
+  case '0': case'1': case'2': case'3': case'4': case'5': case'6': case'7': case'8': case'9':
+  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M':
+  case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
+  case '_':
+  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
+  case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+  case '~':
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
+    }
+    in++;
+    len++;
+    break;
+  default:
+    if (olen > 2) {
+      *out++ = '%';
+      *out++ = hex[*in >> 4];
+      *out++ = hex[*in & 0x0f];
+      olen -= 3;
+    }
+    in++;
+    len += 3;
+    break;
+  }
+  return len;
+}
+
+int
 xmlDecodeBase64(
   unsigned char *out
  ,int olen
