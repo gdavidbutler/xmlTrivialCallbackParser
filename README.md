@@ -7,6 +7,6 @@ It can also be used to "*validate*" XML by passing a NULL callback and verifying
 
 Also included are some "coders", often used by xml, that I'll break out into a separate repo later:
 
-URI encode and decode
-Hex encode and decode
-Base64 encode and decode
+* URI encode and decode
+* Hex encode and decode
+* Base64 encode and decode
