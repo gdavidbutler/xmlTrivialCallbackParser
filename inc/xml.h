@@ -18,7 +18,8 @@ typedef struct {
 } xmlSt_t;
 
 /* prototype of a callback function */
-typedef void (*xmlCb_t)(
+/* returns 0 on success else aborts parse */
+typedef int (*xmlCb_t)(
   xmlTp_t
  ,unsigned int numberOfElementTagNames
  ,const xmlSt_t *elementTagName

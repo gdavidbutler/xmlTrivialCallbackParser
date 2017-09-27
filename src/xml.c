@@ -9,7 +9,7 @@
 
 int
 xmlParse(
-  xmlCb_t cb
+  xmlCb_t c
  ,const char *s
 ,void *v
 ){
@@ -40,8 +40,8 @@ err:
   vl.s = s - 1;
   nm.l = snprintf(ers, sizeof(ers), "Error@%zd", vl.s - b);
   nm.s = ers;
-  if (cb)
-    cb(xmlTp_Er, tgL, tg, &nm, &vl, v);
+  if (c)
+    c(xmlTp_Er, tgL, tg, &nm, &vl, v);
   goto rtn;
 
 atrEq:
@@ -64,8 +64,8 @@ atrEq:
 
 nlTg:
   vl.l = 0;
-  if (cb)
-    cb(xmlTp_Ee, tgL, tg, 0, &vl, v);
+  if (c && c(xmlTp_Ee, tgL, tg, 0, &vl, v))
+    goto rtn;
   if (tgL)
     tgL--;
   for (;;) switch (*s++) {
@@ -81,8 +81,8 @@ nlTg:
 
 nlAtrVal:
   vl.l = 0;
-  if (cb)
-    cb(xmlTp_Ea, tgL, tg, &nm, &vl, v);
+  if (c && c(xmlTp_Ea, tgL, tg, &nm, &vl, v))
+    goto rtn;
   nm.l = 0;
   s--;
   for (;;) switch (*s++) {
@@ -171,11 +171,11 @@ atr:
 
 atrVal:
   vl.l = s - vl.s - 1;
-  if (cb) {
-    if (nm.l)
-      cb(xmlTp_Ea, tgL, tg, &nm, &vl, v);
-    else
-      cb(xmlTp_Ea, tgL, tg, &vl, &nm, v);
+  if (c) {
+    if (nm.l && c(xmlTp_Ea, tgL, tg, &nm, &vl, v))
+      goto rtn;
+    else if (c(xmlTp_Ea, tgL, tg, &vl, &nm, v))
+      goto rtn;
   }
   for (;;) switch (*s++) {
   case '\0':
@@ -265,8 +265,8 @@ eTgNm:
   }
   if (tgL <= tgD)
     vl.l = 0;
-  if (cb)
-    cb(xmlTp_Ee, tgL, tg, 0, &vl, v);
+  if (c && c(xmlTp_Ee, tgL, tg, 0, &vl, v))
+    goto rtn;
   if (tgL)
     tgL--;
   s--;
@@ -343,8 +343,8 @@ sTgNm:
    && *((tg + tgL)->s + 7) == 'E')
     inDoctype = 1;
   tgD = tgL++;
-  if (cb)
-    cb(xmlTp_Eb, tgL, tg, 0, 0, v);
+  if (c && c(xmlTp_Eb, tgL, tg, 0, 0, v))
+    goto rtn;
   s--;
   for (;;) switch (*s++) {
   case '\0':
@@ -763,11 +763,6 @@ xmlEncodeString(
 
   len = 0;
   for (; ilen--;) switch (*in) {
-  case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
-  case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19:
-  default:
-    return -1;
-    break;
   case '\t': case '\n': case '\r':
   case ' ': case '!': case '#': case '$': case '%': case'(': case')': case'*': case'+': case',': case'-': case'.': case'/':
   case '0': case'1': case'2': case'3': case'4': case'5': case'6': case'7': case'8': case'9':
@@ -845,6 +840,9 @@ xmlEncodeString(
     in++;
     len += 6;
     break;
+  default:
+    return -1;
+    break;
   }
   return len;
 }
@@ -868,11 +866,6 @@ xmlEncodeCdata(
       olen--;
     }
   for (; ilen--;) switch (*in) {
-  case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8:
-  case 11: case 12: case 14: case 15: case 16: case 17: case 18: case 19:
-  default:
-    return -1;
-    break;
   case '\t': case '\n': case '\r':
   case ' ': case '!': case '"': case '#': case '$': case '%': case '&': case '\'':
   case '(': case ')': case '*': case '+': case ',': case '-': case '.': case '/':
@@ -932,6 +925,9 @@ xmlEncodeCdata(
       in++;
       len++;
     }
+    break;
+  default:
+    return -1;
     break;
   }
   for (i = 0; i < sizeof(e) - 1; i++, len++)

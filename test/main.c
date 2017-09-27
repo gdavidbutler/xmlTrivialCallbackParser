@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include "xml.h"
 
-void
+static int
 cb(
   xmlTp_t typ
  ,unsigned int l
@@ -68,7 +68,7 @@ cb(
     break;
   }
   fflush(stdout);
-  return;
+  return 0;
 }
 
 int
