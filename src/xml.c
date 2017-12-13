@@ -10,10 +10,10 @@
 int
 xmlParse(
   xmlCb_t c
- ,const char *s
+ ,const unsigned char *s
 ,void *v
 ){
-  const char *b;
+  const unsigned char *b;
   unsigned int tgM; /* maximum level for allocation */
   unsigned int tgL; /* current level */
   unsigned int tgD; /* gone deeper? for body */
@@ -22,7 +22,7 @@ xmlParse(
   xmlSt_t vl;
   int inXml;
   int inDoctype;
-  char ers[32];
+  unsigned char ers[32];
 
   if (!(b = s))
     return -1;
@@ -38,7 +38,7 @@ tgEnd:
 err:
   vl.l = 1;
   vl.s = s - 1;
-  nm.l = snprintf(ers, sizeof(ers), "Error@%zd", vl.s - b);
+  nm.l = snprintf((char *)ers, sizeof(ers), "Error@%zd", vl.s - b);
   nm.s = ers;
   if (c)
     c(xmlTp_Er, tgL, tg, &nm, &vl, v);
@@ -513,9 +513,9 @@ rtn:
 
 int
 xmlDecodeBody(
-  char *out
+  unsigned char *out
  ,int olen
- ,const char *in
+ ,const unsigned char *in
  ,int ilen
 ){
   int len;
@@ -532,17 +532,18 @@ xmlDecodeBody(
      && *(in + 6) == 'T'
      && *(in + 7) == 'A'
      && *(in + 8) == '[') {
-      for (in += 9, ilen -= 9; ilen; ilen--, in++, len++)
-        if (olen > 0) {
-          *out++ = *in;
-          olen--;
-        }
+      for (in += 9, ilen -= 8; ilen--; in++, len++) {
         if (*(in + 0) == ']'
          && *(in + 1) == ']'
          && *(in + 2) == '>') {
           in += 3, ilen -= 2;
           break;
         }
+        if (olen > 0) {
+          *out++ = *in;
+          olen--;
+        }
+      }
     } else {
       if (olen > 0) {
         *out++ = *in;
@@ -666,7 +667,7 @@ xmlDecodeBody(
       }
     case '#':
       if (!(in++,ilen--)) goto err; else switch (*in) {
-        int c;
+        unsigned long c;
 
       case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
         c = *in - '0';
@@ -676,31 +677,22 @@ xmlDecodeBody(
           c += *in - '0';
           break;
         case ';':
-          goto endD;
+          goto enc;
         default:
           goto err;
         }
-endD:
-        if (!ilen--)
-          goto err;
-        if (olen > 0) {
-          *out++ = c;
-          olen--;
-        }
-        in++;
-        len++;
-        continue;
+        goto err;
       case 'x':
         if (!(in++,ilen--)) goto err; else switch (*in) {
         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
           c = *in - '0';
-          goto bgnH;
+          goto nxtH;
         case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
           c = 10 + (*in - 'A');
-          goto bgnH;
+          goto nxtH;
         case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
           c = 10 + (*in - 'a');
-bgnH:
+nxtH:
           for (in++; ilen; in++, ilen--) switch (*in) {
           case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
             c *= 16;
@@ -715,19 +707,69 @@ bgnH:
             c += 10 + (*in - 'a');
             break;
           case ';':
-            goto endH;
+            goto enc;
           default:
             goto err;
           }
-endH:
+          goto err;
+enc:
+          /* https://en.wikipedia.org/wiki/UTF-8 */
           if (!ilen--)
             goto err;
-          if (olen > 0) {
-            *out++ = c;
-            olen--;
-          }
+          if (c <= 0x7f) { /* 7 bits */
+            if (olen > 0) {
+              *out++ = c;
+              olen--;
+            }
+            len++;
+          } else if (c <= 0x7ff) { /* 11 bits */
+            if (olen > 1) {
+              *out++ = 0xc0 | (c >> 6);
+              *out++ = 0x80 | (c & 0x3f);
+              olen -= 2;
+            }
+            len += 2;
+          } else if (c <= 0xffff) { /* 16 bits */
+            if (olen > 2) {
+              *out++ = 0xe0 | (c >> 12);
+              *out++ = 0x80 | (c >> 6 & 0x3f);
+              *out++ = 0x80 | (c & 0x3f);
+              olen -= 3;
+            }
+            len += 3;
+          } else if (c <= 0x1fffff) { /* 21 bits */
+            if (olen > 3) {
+              *out++ = 0xf0 | (c >> 18);
+              *out++ = 0x80 | (c >> 12 & 0x3f);
+              *out++ = 0x80 | (c >> 6 & 0x3f);
+              *out++ = 0x80 | (c & 0x3f);
+              olen -= 4;
+            }
+            len += 4;
+          } else if (c <= 0x3ffffff) { /* 26 bits */
+            if (olen > 4) {
+              *out++ = 0xf8 | (c >> 24);
+              *out++ = 0x80 | (c >> 18 & 0x3f);
+              *out++ = 0x80 | (c >> 12 & 0x3f);
+              *out++ = 0x80 | (c >> 6 & 0x3f);
+              *out++ = 0x80 | (c & 0x3f);
+              olen -= 5;
+            }
+            len += 5;
+          } else if (c <= 0x3ffffff) { /* 31 bits */
+            if (olen > 5) {
+              *out++ = 0xfc | (c >> 30);
+              *out++ = 0x80 | (c >> 24 & 0x3f);
+              *out++ = 0x80 | (c >> 18 & 0x3f);
+              *out++ = 0x80 | (c >> 12 & 0x3f);
+              *out++ = 0x80 | (c >> 6 & 0x3f);
+              *out++ = 0x80 | (c & 0x3f);
+              olen -= 6;
+            }
+            len += 6;
+          } else
+            goto err;
           in++;
-          len++;
           continue;
         default:
           goto err;
@@ -754,32 +796,15 @@ err:
 
 int
 xmlEncodeString(
-  char *out
+  unsigned char *out
  ,int olen
- ,const char *in
+ ,const unsigned char *in
  ,int ilen
 ){
   int len;
 
   len = 0;
   for (; ilen--;) switch (*in) {
-  case '\t': case '\n': case '\r':
-  case ' ': case '!': case '#': case '$': case '%': case'(': case')': case'*': case'+': case',': case'-': case'.': case'/':
-  case '0': case'1': case'2': case'3': case'4': case'5': case'6': case'7': case'8': case'9':
-  case ':': case';': case'=': case'?': case'@':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M':
-  case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-  case '[': case '\\': case ']': case '^': case '_': case '`':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
-  case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-  case '~':
-    if (olen > 0) {
-      *out++ = *in;
-      olen--;
-    }
-    in++;
-    len++;
-    break;
   case '&':
     if (olen > 4) {
       *out++ = '&';
@@ -841,7 +866,12 @@ xmlEncodeString(
     len += 6;
     break;
   default:
-    return -1;
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
+    }
+    in++;
+    len++;
     break;
   }
   return len;
@@ -849,9 +879,9 @@ xmlEncodeString(
 
 int
 xmlEncodeCdata(
-  char *out
+  unsigned char *out
  ,int olen
- ,const char *in
+ ,const unsigned char *in
  ,int ilen
 ){
   static const char b[] = "<![CDATA[";
@@ -866,24 +896,6 @@ xmlEncodeCdata(
       olen--;
     }
   for (; ilen--;) switch (*in) {
-  case '\t': case '\n': case '\r':
-  case ' ': case '!': case '"': case '#': case '$': case '%': case '&': case '\'':
-  case '(': case ')': case '*': case '+': case ',': case '-': case '.': case '/':
-  case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-  case ':': case ';': case '<': case'=': case '>': case'?': case'@':
-  case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J': case 'K': case 'L': case 'M':
-  case 'N': case 'O': case 'P': case 'Q': case 'R': case 'S': case 'T': case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
-  case '[': case '\\': case '^': case '_': case '`':
-  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j': case 'k': case 'l': case 'm':
-  case 'n': case 'o': case 'p': case 'q': case 'r': case 's': case 't': case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
-  case '~':
-    if (olen > 0) {
-      *out++ = *in;
-      olen--;
-    }
-    in++;
-    len++;
-    break;
   case ']':
     if (ilen > 1
      && *(in + 1) == ']'
@@ -927,7 +939,12 @@ xmlEncodeCdata(
     }
     break;
   default:
-    return -1;
+    if (olen > 0) {
+      *out++ = *in;
+      olen--;
+    }
+    in++;
+    len++;
     break;
   }
   for (i = 0; i < sizeof(e) - 1; i++, len++)
@@ -942,11 +959,11 @@ int
 xmlDecodeUri(
   unsigned char *out
  ,int olen
- ,const char *in
+ ,const unsigned char *in
  ,int ilen
 ){
   int len;
-  int c;
+  unsigned char c;
 
   len = 0;
   for (; ilen--;) switch (*in) {
@@ -954,13 +971,13 @@ xmlDecodeUri(
     if (!(in++,ilen--)) goto err; else switch (*in) {
     case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
       c = *in - '0';
-      goto nxt;
+      goto nxtH;
     case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
       c = 10 + (*in - 'A');
-      goto nxt;
+      goto nxtH;
     case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
       c = 10 + (*in - 'a');
-nxt:
+nxtH:
       if (!(in++,ilen--)) goto err; else switch (*in) {
       case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
         c *= 16;

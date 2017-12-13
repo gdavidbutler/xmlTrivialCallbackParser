@@ -28,7 +28,7 @@ cb(
     for (l--, tg++; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
     {
-      char *d;
+      unsigned char *d;
 
       i = -1;
       if (!(d = malloc(vl->l))
@@ -45,7 +45,7 @@ cb(
     for (l--, tg++; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
     {
-      char *d;
+      unsigned char *d;
 
       i = -1;
       if (!(d = malloc(vl->l))
@@ -76,8 +76,8 @@ main(
   int argc
  ,char *argv[]
 ){
-  static const char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
-  static const char uri[] = "http%3A%2F%2Ffoo.bar%23foo%3Ffoo%3Db%2Ba%2Br%26bar%3Df%20o%20o";
+  static const unsigned char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
+  static const unsigned char uri[] = "http%3A%2F%2Ffoo.bar%23foo%3Ffoo%3Db%2Ba%2Br%26bar%3Df%20o%20o";
   static const unsigned char sur[] = "http://foo.bar#foo?foo=b+a+r&bar=f o o";
   static const char b64[] = "QmFzZTY0";
   static const unsigned char s64[] = "Base64";
@@ -85,7 +85,7 @@ main(
   static const unsigned char shx[] = "Hex";
   int fd;
   int sz;
-  char *bf;
+  unsigned char *bf;
 
   if (argc == 2) {
     if (!(bf = malloc(BUFSIZ)))
@@ -98,11 +98,11 @@ main(
       return 2;
     printf("xmlEncodeCdata(%s)\n->\n%.*s\n", enc, sz, bf);
     putchar('\n');
-    if ((sz = xmlDecodeUri((unsigned char *)bf, BUFSIZ, uri, sizeof(uri) - 1)) > BUFSIZ)
+    if ((sz = xmlDecodeUri(bf, BUFSIZ, uri, sizeof(uri) - 1)) > BUFSIZ)
       return 2;
     printf("xmlDecodeUri(%s)\n->\n%.*s\n", uri, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeUri(bf, BUFSIZ, sur, sizeof(sur) - 1)) > BUFSIZ)
+    if ((sz = xmlEncodeUri((char *)bf, BUFSIZ, sur, sizeof(sur) - 1)) > BUFSIZ)
       return 2;
     printf("xmlEncodeUri(%s)\n->\n%.*s\n", sur, sz, bf);
     putchar('\n');
@@ -110,7 +110,7 @@ main(
       return 2;
     printf("xmlDecodeBase64(%s)\n->\n%.*s\n", b64, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeBase64(bf, BUFSIZ, s64, sizeof(s64) - 1)) > BUFSIZ)
+    if ((sz = xmlEncodeBase64((char *)bf, BUFSIZ, s64, sizeof(s64) - 1)) > BUFSIZ)
       return 2;
     printf("xmlEncodeBase64(%s)\n->\n%.*s\n", s64, sz, bf);
     putchar('\n');
@@ -118,7 +118,7 @@ main(
       return 2;
     printf("xmlDecodeHex(%s)\n->\n%.*s\n", hex, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeHex(bf, BUFSIZ, shx, sizeof(shx) - 1)) > BUFSIZ)
+    if ((sz = xmlEncodeHex((char *)bf, BUFSIZ, shx, sizeof(shx) - 1)) > BUFSIZ)
       return 2;
     printf("xmlEncodeHex(%s)\n->\n%.*s\n", shx, sz, bf);
     free(bf);

@@ -13,7 +13,7 @@ typedef enum {
 
 /* pointers referencing fragments of constant buffer must include length */
 typedef struct {
-  const char *s;
+  const unsigned char *s;
   unsigned int l;
 } xmlSt_t;
 
@@ -30,19 +30,19 @@ typedef int (*xmlCb_t)(
 
 /* return -1 on error else offset of last char parsed */
 /* buf must be null terminated */
-int xmlParse(xmlCb_t, const char *buf, void *userContext);
+int xmlParse(xmlCb_t, const unsigned char *buf, void *userContext);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlDecodeBody(char *out, int olen, const char *in, int ilen);
+int xmlDecodeBody(unsigned char *out, int olen, const unsigned char *in, int ilen);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeString(char *out, int olen, const char *in, int ilen);
+int xmlEncodeString(unsigned char *out, int olen, const unsigned char *in, int ilen);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeCdata(char *out, int olen, const char *in, int ilen);
+int xmlEncodeCdata(unsigned char *out, int olen, const unsigned char *in, int ilen);
 
 /* For <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"> */
 
@@ -50,7 +50,7 @@ int xmlEncodeCdata(char *out, int olen, const char *in, int ilen);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlDecodeUri(unsigned char *out, int olen, const char *in, int ilen);
+int xmlDecodeUri(unsigned char *out, int olen, const unsigned char *in, int ilen);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
