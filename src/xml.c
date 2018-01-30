@@ -756,7 +756,7 @@ enc:
               olen -= 5;
             }
             len += 5;
-          } else if (c <= 0x3ffffff) { /* 31 bits */
+          } else if (c <= 0x7fffffff) { /* 31 bits */
             if (olen > 5) {
               *out++ = 0xfc | (c >> 30);
               *out++ = 0x80 | (c >> 24 & 0x3f);
@@ -866,12 +866,81 @@ xmlEncodeString(
     len += 6;
     break;
   default:
-    if (olen > 0) {
-      *out++ = *in;
-      olen--;
-    }
-    in++;
-    len++;
+    /* https://en.wikipedia.org/wiki/UTF-8 */
+    if ((*in & 0x80) == 0x00) { /* 1 byte */
+      if (olen > 0) {
+        *out++ = *in++;
+        olen--;
+      } else
+        in++;
+      len++;
+    } else if ((*in & 0xe0) == 0xc0 /* 2 bytes */
+            && (*(in + 1) & 0xc0) == 0x80) {
+      if (olen > 1) {
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 2;
+      } else
+        in += 2;
+      len += 2;
+    } else if ((*in & 0xf0) == 0xe0 /* 3 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80) {
+      if (olen > 2) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 3;
+      } else
+        in += 3;
+      len += 3;
+    } else if ((*in & 0xf8) == 0xf0 /* 4 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80
+            && (*(in + 3) & 0xc0) == 0x80) {
+      if (olen > 3) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 4;
+      } else
+        in += 4;
+      len += 4;
+    } else if ((*in & 0xfc) == 0xf8 /* 5 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80
+            && (*(in + 3) & 0xc0) == 0x80
+            && (*(in + 4) & 0xc0) == 0x80) {
+      if (olen > 4) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 5;
+      } else
+        in += 5;
+      len += 5;
+    } else if ((*in & 0xfe) == 0xfc /* 6 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80
+            && (*(in + 3) & 0xc0) == 0x80
+            && (*(in + 4) & 0xc0) == 0x80
+            && (*(in + 5) & 0xc0) == 0x80) {
+      if (olen > 5) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 6;
+      } else
+        in += 6;
+      len += 6;
+    } else
+      return -1;
     break;
   }
   return len;
@@ -939,12 +1008,81 @@ xmlEncodeCdata(
     }
     break;
   default:
-    if (olen > 0) {
-      *out++ = *in;
-      olen--;
-    }
-    in++;
-    len++;
+    /* https://en.wikipedia.org/wiki/UTF-8 */
+    if ((*in & 0x80) == 0x00) { /* 1 byte */
+      if (olen > 0) {
+        *out++ = *in++;
+        olen--;
+      } else
+        in++;
+      len++;
+    } else if ((*in & 0xe0) == 0xc0 /* 2 bytes */
+            && (*(in + 1) & 0xc0) == 0x80) {
+      if (olen > 1) {
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 2;
+      } else
+        in += 2;
+      len += 2;
+    } else if ((*in & 0xf0) == 0xe0 /* 3 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80) {
+      if (olen > 2) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 3;
+      } else
+        in += 3;
+      len += 3;
+    } else if ((*in & 0xf8) == 0xf0 /* 4 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80
+            && (*(in + 3) & 0xc0) == 0x80) {
+      if (olen > 3) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 4;
+      } else
+        in += 4;
+      len += 4;
+    } else if ((*in & 0xfc) == 0xf8 /* 5 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80
+            && (*(in + 3) & 0xc0) == 0x80
+            && (*(in + 4) & 0xc0) == 0x80) {
+      if (olen > 4) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 5;
+      } else
+        in += 5;
+      len += 5;
+    } else if ((*in & 0xfe) == 0xfc /* 6 bytes */
+            && (*(in + 1) & 0xc0) == 0x80
+            && (*(in + 2) & 0xc0) == 0x80
+            && (*(in + 3) & 0xc0) == 0x80
+            && (*(in + 4) & 0xc0) == 0x80
+            && (*(in + 5) & 0xc0) == 0x80) {
+      if (olen > 5) {
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        *out++ = *in++;
+        olen -= 6;
+      } else
+        in += 6;
+      len += 6;
+    } else
+      return -1;
     break;
   }
   for (i = 0; i < sizeof(e) - 1; i++, len++)
