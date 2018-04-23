@@ -801,10 +801,31 @@ xmlEncodeString(
  ,const unsigned char *in
  ,int ilen
 ){
+  static const char hex[] = "0123456789ABCDEF";
   int len;
 
   len = 0;
   for (; ilen--;) switch (*in) {
+  case 0x00:
+    return -1;
+    break;
+  case            0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
+  case 0x08:                       case 0x0b: case 0x0c:            case 0x0e: case 0x0f:
+  case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
+  case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c: case 0x1d: case 0x1e: case 0x1f:
+  case                                                                              0x7f:
+    if (olen > 5) {
+      *out++ = '&';
+      *out++ = '#';
+      *out++ = 'x';
+      *out++ = hex[*in >> 4];
+      *out++ = hex[*in & 0x0f];
+      *out++ = ';';
+      olen -= 6;
+    }
+    in++;
+    len += 6;
+    break;
   case '&':
     if (olen > 4) {
       *out++ = '&';
@@ -965,6 +986,9 @@ xmlEncodeCdata(
       olen--;
     }
   for (; ilen--;) switch (*in) {
+  case 0x00:
+    return -1;
+    break;
   case ']':
     if (ilen > 1
      && *(in + 1) == ']'
