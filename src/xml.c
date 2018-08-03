@@ -172,9 +172,10 @@ atr:
 atrVal:
   vl.l = s - vl.s - 1;
   if (c) {
-    if (nm.l && c(xmlTp_Ea, tgL, tg, &nm, &vl, v))
-      goto rtn;
-    else if (c(xmlTp_Ea, tgL, tg, &vl, &nm, v))
+    if (nm.l) {
+      if (c(xmlTp_Ea, tgL, tg, &nm, &vl, v))
+        goto rtn;
+    } else if (c(xmlTp_Ea, tgL, tg, &vl, &nm, v))
       goto rtn;
   }
   for (;;) switch (*s++) {

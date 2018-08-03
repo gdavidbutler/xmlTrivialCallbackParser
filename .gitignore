@@ -1,3 +1,4 @@
 core
 main
+print
 *.o
