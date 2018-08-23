@@ -1,7 +1,7 @@
 ## xmlTrivialCallbackParser
 Trivial XML callback parser in standard C. Inspired by [xread](https://github.com/naleksiev/xread.git). (xread uses GCC non-standard label (&&label) pointers.)
 
-No dynamic memory allocation. No memory copying. Small and Fast.
+No dependencies. No dynamic memory allocation. No memory copying. Small and Fast.
 
 No XML validation. To simply "*check*" that a XML string can be parsed, use a NULL callback and verify the return offset is the same as the source length.
 

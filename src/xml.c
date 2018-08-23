@@ -3,8 +3,6 @@
  * License: https://github.com/gdavidbutler/xmlTrivialCallbackParser/blob/master/LICENSE
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include "xml.h"
 
 int
@@ -15,6 +13,7 @@ xmlParse(
  ,const unsigned char *s
 ,void *v
 ){
+  static const unsigned char es[] = "ParseError";
   const unsigned char *sb;
   unsigned int tL; /* current level */
   unsigned int tD; /* gone deeper? for body */
@@ -22,7 +21,6 @@ xmlParse(
   xmlSt_t vl;
   int ix; /* inXml */
   int id; /* inDoctype */
-  unsigned char es[32];
 
   if (!(sb = s))
     return -1;
@@ -37,7 +35,7 @@ tEnd:
 err:
   vl.l = 1;
   vl.s = s - 1;
-  nm.l = snprintf((char *)es, sizeof(es), "Error@%zd", vl.s - sb);
+  nm.l = sizeof(es) - 1;
   nm.s = es;
   if (c)
     c(xmlTp_Er, tL, t, &nm, &vl, v);
