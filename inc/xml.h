@@ -29,8 +29,9 @@ typedef int (*xmlCb_t)(
 );
 
 /* return -1 on error else offset of last char parsed */
-/* buf must be null terminated */
-int xmlParse(xmlCb_t, const unsigned char *buf, void *userContext);
+/* provide a tag buffer large enough for the deepest level of nesting supported */
+/* xml must be null terminated */
+int xmlParse(xmlCb_t, unsigned int numberOfElementTagBuf, xmlSt_t *elementTagBuf, const unsigned char *xml, void *userContext);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */

@@ -90,6 +90,7 @@ int
 main(
 ){
   unsigned char *bf;
+  xmlSt_t tg[64];
   int sz;
   int i;
 
@@ -103,7 +104,7 @@ main(
   }
   *(bf + sz) = '\0';
   P = 0;
-  xmlParse(cb, bf, 0);
+  xmlParse(cb, sizeof(tg) / sizeof(tg[0]), tg, bf, 0);
   if (P) {
     putchar('>');
     putchar('\n');

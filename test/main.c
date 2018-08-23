@@ -83,6 +83,7 @@ main(
   static const unsigned char s64[] = "Base64";
   static const char hex[] = "486578";
   static const unsigned char shx[] = "Hex";
+  xmlSt_t tg[64];
   int fd;
   int sz;
   unsigned char *bf;
@@ -141,7 +142,7 @@ main(
   }
   close(fd);
   bf[sz] = '\0';
-  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, bf, 0));
+  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof(tg) / sizeof(tg[0]), tg, bf, 0));
   free(bf);
   return 0;
 }

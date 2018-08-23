@@ -10,38 +10,37 @@
 int
 xmlParse(
   xmlCb_t c
+ ,unsigned int m
+ ,xmlSt_t *t
  ,const unsigned char *s
 ,void *v
 ){
-  const unsigned char *b;
-  unsigned int tgM; /* maximum level for allocation */
-  unsigned int tgL; /* current level */
-  unsigned int tgD; /* gone deeper? for body */
-  xmlSt_t *tg;
+  const unsigned char *sb;
+  unsigned int tL; /* current level */
+  unsigned int tD; /* gone deeper? for body */
   xmlSt_t nm;
   xmlSt_t vl;
-  int inXml;
-  int inDoctype;
-  unsigned char ers[32];
+  int ix; /* inXml */
+  int id; /* inDoctype */
+  unsigned char es[32];
 
-  if (!(b = s))
+  if (!(sb = s))
     return -1;
-  tgD = tgL = tgM = 0;
-  tg = 0;
-  inXml = 0;
-  inDoctype = 0;
+  tD = tL = 0;
+  ix = 0;
+  id = 0;
 
-tgEnd:
+tEnd:
   vl.s = s;
   goto bgn;
 
 err:
   vl.l = 1;
   vl.s = s - 1;
-  nm.l = snprintf((char *)ers, sizeof(ers), "Error@%zd", vl.s - b);
-  nm.s = ers;
+  nm.l = snprintf((char *)es, sizeof(es), "Error@%zd", vl.s - sb);
+  nm.s = es;
   if (c)
-    c(xmlTp_Er, tgL, tg, &nm, &vl, v);
+    c(xmlTp_Er, tL, t, &nm, &vl, v);
   goto rtn;
 
 atrEq:
@@ -64,16 +63,16 @@ atrEq:
 
 nlTg:
   vl.l = 0;
-  if (c && c(xmlTp_Ee, tgL, tg, 0, &vl, v))
+  if (c && c(xmlTp_Ee, tL, t, 0, &vl, v))
     goto rtn;
-  if (tgL)
-    tgL--;
+  if (tL)
+    tL--;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
 
   case '>':
-    goto tgEnd;
+    goto tEnd;
 
   default:
     goto err;
@@ -81,7 +80,7 @@ nlTg:
 
 nlAtrVal:
   vl.l = 0;
-  if (c && c(xmlTp_Ea, tgL, tg, &nm, &vl, v))
+  if (c && c(xmlTp_Ea, tL, t, &nm, &vl, v))
     goto rtn;
   nm.l = 0;
   s--;
@@ -99,14 +98,14 @@ nlAtrVal:
     goto atrValSq;
 
   case '/':
-    if (inXml)
+    if (ix)
       goto atr;
     else
       goto nlTg;
 
   case '?':
-    if (inXml) {
-      inXml--;
+    if (ix) {
+      ix--;
       goto nlTg;
     } else
       goto atr;
@@ -115,16 +114,16 @@ nlAtrVal:
     goto err;
 
   case '>':
-    if (inDoctype) {
-      inDoctype--;
+    if (id) {
+      id--;
       s--;
       goto nlTg;
     } else
-      goto tgEnd;
+      goto tEnd;
 
   case '[':
-    if (inDoctype)
-      goto tgEnd;
+    if (id)
+      goto tEnd;
     else
       goto atr;
 
@@ -173,9 +172,9 @@ atrVal:
   vl.l = s - vl.s - 1;
   if (c) {
     if (nm.l) {
-      if (c(xmlTp_Ea, tgL, tg, &nm, &vl, v))
+      if (c(xmlTp_Ea, tL, t, &nm, &vl, v))
         goto rtn;
-    } else if (c(xmlTp_Ea, tgL, tg, &vl, &nm, v))
+    } else if (c(xmlTp_Ea, tL, t, &vl, &nm, v))
       goto rtn;
   }
   for (;;) switch (*s++) {
@@ -192,14 +191,14 @@ atrVal:
     goto atrValSq;
 
   case '/':
-    if (inXml)
+    if (ix)
       goto atr;
     else
       goto nlTg;
 
   case '?':
-    if (inXml) {
-      inXml--;
+    if (ix) {
+      ix--;
       goto nlTg;
     } else
       goto atr;
@@ -208,16 +207,16 @@ atrVal:
     goto err;
 
   case '>':
-    if (inDoctype) {
-      inDoctype--;
+    if (id) {
+      id--;
       s--;
       goto nlTg;
     } else
-      goto tgEnd;
+      goto tEnd;
 
   case '[':
-    if (inDoctype)
-      goto tgEnd;
+    if (id)
+      goto tEnd;
     else
       goto atr;
 
@@ -258,44 +257,37 @@ atrValSq:
   }
 
 eTgNm:
-  if (tgL)
-    (tg + tgL - 1)->l = s - (tg + tgL - 1)->s - 1;
+  if (tL)
+    (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
   else {
-    (tg + tgL)->l = s - (tg + tgL)->s - 1;
-    tgL++;
+    (t + tL)->l = s - (t + tL)->s - 1;
+    tL++;
   }
-  if (tgL <= tgD)
+  if (tL <= tD)
     vl.l = 0;
-  if (c && c(xmlTp_Ee, tgL, tg, 0, &vl, v))
+  if (c && c(xmlTp_Ee, tL, t, 0, &vl, v))
     goto rtn;
-  if (tgL)
-    tgL--;
+  if (tL)
+    tL--;
   s--;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
 
   case '>':
-    goto tgEnd;
+    goto tEnd;
 
   default:
     goto err;
   }
 
 eNm:
-  if (tgL)
-    (tg + tgL - 1)->s = s - 1;
-  else {
-    if (tgL == tgM) {
-      void *t;
-
-      if (!(t = realloc(tg, (tgM + 1) * sizeof(*tg))))
-        goto rtn;
-      tg = t;
-      tgM++;
-    }
-    (tg + tgL)->s = s - 1;
-  }
+  if (tL)
+    (t + tL - 1)->s = s - 1;
+  else if (tL == m)
+    goto rtn;
+  else
+    (t + tL)->s = s - 1;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -326,25 +318,25 @@ eTg:
   }
 
 sTgNm:
-  (tg + tgL)->l = s - (tg + tgL)->s - 1;
-  if ((tg + tgL)->l == 4
-   && *((tg + tgL)->s + 0) == '?'
-   && *((tg + tgL)->s + 1) == 'x'
-   && *((tg + tgL)->s + 2) == 'm'
-   && *((tg + tgL)->s + 3) == 'l')
-    inXml = 1;
-  else if ((tg + tgL)->l == 8
-   && *((tg + tgL)->s + 0) == '!'
-   && *((tg + tgL)->s + 1) == 'D'
-   && *((tg + tgL)->s + 2) == 'O'
-   && *((tg + tgL)->s + 3) == 'C'
-   && *((tg + tgL)->s + 4) == 'T'
-   && *((tg + tgL)->s + 5) == 'Y'
-   && *((tg + tgL)->s + 6) == 'P'
-   && *((tg + tgL)->s + 7) == 'E')
-    inDoctype = 1;
-  tgD = tgL++;
-  if (c && c(xmlTp_Eb, tgL, tg, 0, 0, v))
+  (t + tL)->l = s - (t + tL)->s - 1;
+  if ((t + tL)->l == 4
+   && *((t + tL)->s + 0) == '?'
+   && *((t + tL)->s + 1) == 'x'
+   && *((t + tL)->s + 2) == 'm'
+   && *((t + tL)->s + 3) == 'l')
+    ix = 1;
+  else if ((t + tL)->l == 8
+   && *((t + tL)->s + 0) == '!'
+   && *((t + tL)->s + 1) == 'D'
+   && *((t + tL)->s + 2) == 'O'
+   && *((t + tL)->s + 3) == 'C'
+   && *((t + tL)->s + 4) == 'T'
+   && *((t + tL)->s + 5) == 'Y'
+   && *((t + tL)->s + 6) == 'P'
+   && *((t + tL)->s + 7) == 'E')
+    id = 1;
+  tD = tL++;
+  if (c && c(xmlTp_Eb, tL, t, 0, 0, v))
     goto rtn;
   s--;
   for (;;) switch (*s++) {
@@ -361,14 +353,14 @@ sTgNm:
     goto atrValSq;
 
   case '/':
-    if (inXml)
+    if (ix)
       goto atr;
     else
       goto nlTg;
 
   case '?':
-    if (inXml) {
-      inXml--;
+    if (ix) {
+      ix--;
       goto nlTg;
     } else
       goto atr;
@@ -377,16 +369,16 @@ sTgNm:
     goto err;
 
   case '>':
-    if (inDoctype) {
-      inDoctype--;
+    if (id) {
+      id--;
       s--;
       goto nlTg;
     } else
-      goto tgEnd;
+      goto tEnd;
 
   case '[':
-    if (inDoctype)
-      goto tgEnd;
+    if (id)
+      goto tEnd;
     else
       goto atr;
 
@@ -395,17 +387,11 @@ sTgNm:
   }
 
 sNm:
-  if (tgL == tgM) {
-    void *t;
-
-    if (!(t = realloc(tg, (tgM + 1) * sizeof(*tg))))
-      goto rtn;
-    tg = t;
-    tgM++;
-  }
-  (tg + tgL)->s = s - 1;
-  if (inDoctype)
-    inDoctype++;
+  if (tL == m)
+    goto rtn;
+  (t + tL)->s = s - 1;
+  if (id)
+    id++;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -415,14 +401,14 @@ sNm:
     goto sTgNm;
 
   case '/':
-    if (inXml)
+    if (ix)
       break;
     else
       goto sTgNm;
 
   case '?':
-    if (inXml) {
-      inXml--;
+    if (ix) {
+      ix--;
       goto sTgNm;
     } else
       break;
@@ -455,7 +441,7 @@ sTg:
          && *(s + 2) == '-'
          && *(s + 3) == '>') {
           s += 4;
-          goto tgEnd;
+          goto tEnd;
         }
       s++;
       goto rtn;
@@ -496,8 +482,8 @@ bgn:
     goto sTg;
 
   case '>':
-    if (inDoctype) {
-      inDoctype--;
+    if (id) {
+      id--;
       s--;
       goto nlTg;
     } else
@@ -508,8 +494,7 @@ bgn:
   }
 
 rtn:
-  free(tg);
-  return s - b - 1;
+  return s - sb - 1;
 }
 
 int
