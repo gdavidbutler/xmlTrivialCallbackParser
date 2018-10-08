@@ -19,13 +19,13 @@ xmlParse(
   unsigned int tD; /* gone deeper? for body */
   xmlSt_t nm;
   xmlSt_t vl;
-  int ix; /* inXml */
-  int id; /* inDoctype */
+  int ii; /* in instruction */
+  int id; /* in DOCTYPE */
 
   if (!(sb = s))
     return -1;
   tD = tL = 0;
-  ix = 0;
+  ii = 0;
   id = 0;
 
 tEnd:
@@ -96,14 +96,14 @@ nlAtrVal:
     goto atrValSq;
 
   case '/':
-    if (ix)
+    if (ii)
       goto atr;
     else
       goto nlTg;
 
   case '?':
-    if (ix) {
-      ix--;
+    if (ii) {
+      ii = 0;
       goto nlTg;
     } else
       goto atr;
@@ -189,14 +189,14 @@ atrVal:
     goto atrValSq;
 
   case '/':
-    if (ix)
+    if (ii)
       goto atr;
     else
       goto nlTg;
 
   case '?':
-    if (ix) {
-      ix--;
+    if (ii) {
+      ii = 0;
       goto nlTg;
     } else
       goto atr;
@@ -317,12 +317,8 @@ eTg:
 
 sTgNm:
   (t + tL)->l = s - (t + tL)->s - 1;
-  if ((t + tL)->l == 4
-   && *((t + tL)->s + 0) == '?'
-   && *((t + tL)->s + 1) == 'x'
-   && *((t + tL)->s + 2) == 'm'
-   && *((t + tL)->s + 3) == 'l')
-    ix = 1;
+  if ((t + tL)->l && *(t + tL)->s == '?')
+    ii = 1;
   else if ((t + tL)->l == 8
    && *((t + tL)->s + 0) == '!'
    && *((t + tL)->s + 1) == 'D'
@@ -351,14 +347,14 @@ sTgNm:
     goto atrValSq;
 
   case '/':
-    if (ix)
+    if (ii)
       goto atr;
     else
       goto nlTg;
 
   case '?':
-    if (ix) {
-      ix--;
+    if (ii) {
+      ii = 0;
       goto nlTg;
     } else
       goto atr;
@@ -399,14 +395,14 @@ sNm:
     goto sTgNm;
 
   case '/':
-    if (ix)
+    if (ii)
       break;
     else
       goto sTgNm;
 
   case '?':
-    if (ix) {
-      ix--;
+    if (ii) {
+      ii = 0;
       goto sTgNm;
     } else
       break;
