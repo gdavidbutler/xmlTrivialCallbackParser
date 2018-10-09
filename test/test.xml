@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" ?>
 <?php echo $a; ?>
-<!DOCTYPE a b "c">
+<!DOCTYPE a 'b' "c">
+<!ENTITY a 'b' "c" [<!ENTITY [d]>]>
 <doc>
     <!-- comment -->
     <atr x="cat" y='mouse' />

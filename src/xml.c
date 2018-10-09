@@ -19,14 +19,14 @@ xmlParse(
   unsigned int tD; /* gone deeper? for body */
   xmlSt_t nm;
   xmlSt_t vl;
-  int ii; /* in instruction */
-  int id; /* in DOCTYPE */
+  unsigned int ii; /* in instruction */
+  unsigned int is; /* in section */
 
   if (!(sb = s))
     return -1;
   tD = tL = 0;
   ii = 0;
-  id = 0;
+  is = 0;
 
 tEnd:
   vl.s = s;
@@ -112,16 +112,16 @@ nlAtrVal:
     goto err;
 
   case '>':
-    if (id) {
-      id--;
+    if (is) {
+      is = 0;
       s--;
       goto nlTg;
     } else
       goto tEnd;
 
   case '[':
-    if (id)
-      goto tEnd;
+    if (is)
+      goto atrValBr;
     else
       goto atr;
 
@@ -205,16 +205,16 @@ atrVal:
     goto err;
 
   case '>':
-    if (id) {
-      id--;
+    if (is) {
+      is = 0;
       s--;
       goto nlTg;
     } else
       goto tEnd;
 
   case '[':
-    if (id)
-      goto tEnd;
+    if (is)
+      goto atrValBr;
     else
       goto atr;
 
@@ -231,9 +231,6 @@ atrValDq:
   case '"':
     goto atrVal;
 
-  case '<': case '>':
-    goto err;
-
   default:
     break;
   }
@@ -247,8 +244,24 @@ atrValSq:
   case '\'':
     goto atrVal;
 
-  case '<': case '>':
-    goto err;
+  default:
+    break;
+  }
+
+atrValBr:
+  vl.s = s;
+  ++is;
+  for (;;) switch (*s++) {
+  case '\0':
+    goto rtn;
+
+  case '[':
+    is++;
+    break;
+
+  case ']':
+    if (--is == 1)
+      goto atrVal;
 
   default:
     break;
@@ -317,18 +330,12 @@ eTg:
 
 sTgNm:
   (t + tL)->l = s - (t + tL)->s - 1;
-  if ((t + tL)->l && *(t + tL)->s == '?')
-    ii = 1;
-  else if ((t + tL)->l == 8
-   && *((t + tL)->s + 0) == '!'
-   && *((t + tL)->s + 1) == 'D'
-   && *((t + tL)->s + 2) == 'O'
-   && *((t + tL)->s + 3) == 'C'
-   && *((t + tL)->s + 4) == 'T'
-   && *((t + tL)->s + 5) == 'Y'
-   && *((t + tL)->s + 6) == 'P'
-   && *((t + tL)->s + 7) == 'E')
-    id = 1;
+  if ((t + tL)->l) {
+    if (*(t + tL)->s == '?')
+      ii = 1;
+    else if (*(t + tL)->s == '!')
+      is = 1;
+  }
   tD = tL++;
   if (c && c(xmlTp_Eb, tL, t, 0, 0, v))
     goto rtn;
@@ -363,16 +370,16 @@ sTgNm:
     goto err;
 
   case '>':
-    if (id) {
-      id--;
+    if (is) {
+      is = 0;
       s--;
       goto nlTg;
     } else
       goto tEnd;
 
   case '[':
-    if (id)
-      goto tEnd;
+    if (is)
+      goto atrValBr;
     else
       goto atr;
 
@@ -384,8 +391,6 @@ sNm:
   if (tL == m)
     goto rtn;
   (t + tL)->s = s - 1;
-  if (id)
-    id++;
   for (;;) switch (*s++) {
   case '\0':
     goto rtn;
@@ -456,14 +461,8 @@ bgn:
 
   case '<':
     if (*(s + 0) == '!'
-     && *(s + 1) == '['
-     && *(s + 2) == 'C'
-     && *(s + 3) == 'D'
-     && *(s + 4) == 'A'
-     && *(s + 5) == 'T'
-     && *(s + 6) == 'A'
-     && *(s + 7) == '[') {
-      for (s += 7; *s; s++)
+     && *(s + 1) == '[') {
+      for (s++; *s; s++)
         if (*(s + 0) == ']'
          && *(s + 1) == ']'
          && *(s + 2) == '>') {
@@ -476,8 +475,8 @@ bgn:
     goto sTg;
 
   case '>':
-    if (id) {
-      id--;
+    if (is) {
+      is = 0;
       s--;
       goto nlTg;
     } else
