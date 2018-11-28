@@ -28,7 +28,7 @@ cb(
     printf("<%.*s", (tg + l - 1)->l, (tg + l - 1)->s);
     break;
   case xmlTp_Ea:
-    printf(" \"%.*s\"", nm->l, nm->s);
+    printf(" %.*s", nm->l, nm->s);
     if (vl->l) {
       unsigned char *d;
 
