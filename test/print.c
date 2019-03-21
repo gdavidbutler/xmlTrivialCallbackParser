@@ -102,9 +102,8 @@ main(
     if (!(bf = realloc(bf, sz + BUFSIZ)))
       return -1;
   }
-  *(bf + sz) = '\0';
   P = 0;
-  xmlParse(cb, sizeof(tg) / sizeof(tg[0]), tg, bf, 0);
+  xmlParse(cb, sizeof(tg) / sizeof(tg[0]), tg, bf, sz, 0);
   if (P) {
     putchar('>');
     putchar('\n');

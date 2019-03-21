@@ -11,6 +11,7 @@ xmlParse(
  ,unsigned int m
  ,xmlSt_t *t
  ,const unsigned char *s
+ ,unsigned int l
 ,void *v
 ){
   static const unsigned char es[] = "ParseError";
@@ -39,13 +40,11 @@ err:
   nm.s = es;
   if (c)
     c(xmlTp_Er, tL, t, &nm, &vl, v);
+  l++, s--;
   goto rtn;
 
 atrEq:
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
     break;
 
@@ -58,6 +57,7 @@ atrEq:
   default:
     goto err;
   }
+  goto rtn;
 
 nlTg:
   vl.l = 0;
@@ -65,27 +65,22 @@ nlTg:
     goto rtn;
   if (tL)
     tL--;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '>':
     goto tEnd;
 
   default:
     goto err;
   }
+  goto rtn;
 
 nlAtrVal:
   vl.l = 0;
   if (c && c(xmlTp_Ea, tL, t, &nm, &vl, v))
     goto rtn;
   nm.l = 0;
-  s--;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  l++, s--;
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
     break;
 
@@ -114,7 +109,7 @@ nlAtrVal:
   case '>':
     if (is) {
       is = 0;
-      s--;
+      l++, s--;
       goto nlTg;
     } else
       goto tEnd;
@@ -128,14 +123,12 @@ nlAtrVal:
   default:
     goto atr;
   }
+  goto rtn;
 
 atrNm:
   nm.l = s - nm.s - 1;
-  s--;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  l++, s--;
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
     break;
 
@@ -148,13 +141,11 @@ atrNm:
   default:
     goto nlAtrVal;
   }
+  goto rtn;
 
 atr:
   nm.s = s - 1;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'': case '/': case '?': case '=': case '>':
     goto atrNm;
@@ -165,6 +156,7 @@ atr:
   default:
     break;
   }
+  goto rtn;
 
 atrVal:
   vl.l = s - vl.s - 1;
@@ -175,10 +167,7 @@ atrVal:
     } else if (c(xmlTp_Ea, tL, t, &vl, &nm, v))
       goto rtn;
   }
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
     break;
 
@@ -207,7 +196,7 @@ atrVal:
   case '>':
     if (is) {
       is = 0;
-      s--;
+      l++, s--;
       goto nlTg;
     } else
       goto tEnd;
@@ -221,40 +210,34 @@ atrVal:
   default:
     goto atr;
   }
+  goto rtn;
 
 atrValDq:
   vl.s = s;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '"':
     goto atrVal;
 
   default:
     break;
   }
+  goto rtn;
 
 atrValSq:
   vl.s = s;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\'':
     goto atrVal;
 
   default:
     break;
   }
+  goto rtn;
 
 atrValBr:
   vl.s = s;
   ++is;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '[':
     is++;
     break;
@@ -266,6 +249,7 @@ atrValBr:
   default:
     break;
   }
+  goto rtn;
 
 eTgNm:
   if (tL)
@@ -280,17 +264,15 @@ eTgNm:
     goto rtn;
   if (tL)
     tL--;
-  s--;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  l++, s--;
+  for (; l--;) switch (*s++) {
   case '>':
     goto tEnd;
 
   default:
     goto err;
   }
+  goto rtn;
 
 eNm:
   if (tL)
@@ -299,10 +281,7 @@ eNm:
     goto rtn;
   else
     (t + tL)->s = s - 1;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'': case '/': case '<':
     goto err;
@@ -313,12 +292,10 @@ eNm:
   default:
     break;
   }
+  goto rtn;
 
 eTg:
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'':
   case '<': case '>':
@@ -327,6 +304,7 @@ eTg:
   default:
     goto eNm;
   }
+  goto rtn;
 
 sTgNm:
   (t + tL)->l = s - (t + tL)->s - 1;
@@ -339,11 +317,8 @@ sTgNm:
   tD = tL++;
   if (c && c(xmlTp_Eb, tL, t, 0, 0, v))
     goto rtn;
-  s--;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  l++, s--;
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
     break;
 
@@ -372,7 +347,7 @@ sTgNm:
   case '>':
     if (is) {
       is = 0;
-      s--;
+      l++, s--;
       goto nlTg;
     } else
       goto tEnd;
@@ -386,15 +361,13 @@ sTgNm:
   default:
     goto atr;
   }
+  goto rtn;
 
 sNm:
   if (tL == m)
     goto rtn;
   (t + tL)->s = s - 1;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'': case '>':
     goto sTgNm;
@@ -418,31 +391,30 @@ sNm:
   default:
     break;
   }
+  goto rtn;
 
 sTg:
   vl.l = s - vl.s - 1;
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'':
   case '<': case '>':
     goto err;
 
   case '!':
-    if (*(s + 0) == '-'
+    if (l > 5
+     && *(s + 0) == '-'
      && *(s + 1) == '-'
      && (*(s + 2) == ' ' || *(s + 2) == '\n' || *(s + 2) == '\r')) {
-      for (s += 2; *s; s++)
+      for (l -= 2, s += 2; l; l--, s++)
         if ((*(s + 0) == ' ' || *(s + 0) == '\n' || *(s + 0) == '\r')
          && *(s + 1) == '-'
          && *(s + 2) == '-'
          && *(s + 3) == '>') {
-          s += 4;
+          l -= 4, s += 4;
           goto tEnd;
         }
-      s++;
+      l--, s++;
       goto rtn;
     }
     goto sNm;
@@ -453,22 +425,22 @@ sTg:
   default:
     goto sNm;
   }
+  goto rtn;
 
 bgn:
-  for (;;) switch (*s++) {
-  case '\0':
-    goto rtn;
-
+  for (; l--;) switch (*s++) {
   case '<':
-    if (*(s + 0) == '!'
+    if (l > 3
+     && *(s + 0) == '!'
      && *(s + 1) == '[') {
-      for (s++; *s; s++)
+      for (l--, s++; l; l--, s++)
         if (*(s + 0) == ']'
          && *(s + 1) == ']'
          && *(s + 2) == '>') {
-          s += 3;
+          l -= 3, s += 3;
           goto bgn;
         }
+      l--;
       s++;
       goto rtn;
     }
@@ -477,7 +449,7 @@ bgn:
   case '>':
     if (is) {
       is = 0;
-      s--;
+      l++, s--;
       goto nlTg;
     } else
       break;
@@ -487,15 +459,15 @@ bgn:
   }
 
 rtn:
-  return s - sb - 1;
+  return s - sb;
 }
 
 int
 xmlDecodeBody(
   unsigned char *out
- ,int olen
+ ,unsigned int olen
  ,const unsigned char *in
- ,int ilen
+ ,unsigned int ilen
 ){
   int len;
 
@@ -528,8 +500,7 @@ xmlDecodeBody(
         *out++ = *in;
         olen--;
       }
-      in++;
-      len++;
+      in++, len++;
     }
     break;
   case '&':
@@ -545,8 +516,7 @@ xmlDecodeBody(
               *out++ = '&';
               olen--;
             }
-            in++;
-            len++;
+            in++, len++;
             continue;
           default:
             goto err;
@@ -565,8 +535,7 @@ xmlDecodeBody(
                 *out++ = '\'';
                 olen--;
               }
-              in++;
-              len++;
+              in++, len++;
               continue;
             default:
               goto err;
@@ -589,8 +558,7 @@ xmlDecodeBody(
             *out++ = '>';
             olen--;
           }
-          in++;
-          len++;
+          in++, len++;
           continue;
         default:
           goto err;
@@ -607,8 +575,7 @@ xmlDecodeBody(
             *out++ = '<';
             olen--;
           }
-          in++;
-          len++;
+          in++, len++;
           continue;
         default:
           goto err;
@@ -629,8 +596,7 @@ xmlDecodeBody(
                 *out++ = '"';
                 olen--;
               }
-              in++;
-              len++;
+              in++, len++;
               continue;
             default:
               goto err;
@@ -764,8 +730,7 @@ enc:
       *out++ = *in;
       olen--;
     }
-    in++;
-    len++;
+    in++, len++;
     break;
   }
   return len;
@@ -776,9 +741,9 @@ err:
 int
 xmlEncodeString(
   unsigned char *out
- ,int olen
+ ,unsigned int olen
  ,const unsigned char *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static const char hex[] = "0123456789ABCDEF";
   int len;
@@ -949,9 +914,9 @@ xmlEncodeString(
 int
 xmlEncodeCdata(
   unsigned char *out
- ,int olen
+ ,unsigned int olen
  ,const unsigned char *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static const char b[] = "<![CDATA[";
   static const char e[] = "]]>";
@@ -976,14 +941,12 @@ xmlEncodeCdata(
         *out++ = *in;
         olen--;
       }
-      in++;
-      len++;
+      in++, len++;
       if (olen > 0) {
         *out++ = *in;
         olen--;
       }
-      in++;
-      len++;
+      in++, len++;
       for (i = 0; i < sizeof(e) - 1; i++, len++)
         if (olen > 0) {
           *out++ = e[i];
@@ -998,16 +961,14 @@ xmlEncodeCdata(
         *out++ = *in;
         olen--;
       }
-      in++;
-      len++;
+      in++, len++;
       ilen -= 2;
     } else {
       if (olen > 0) {
         *out++ = *in;
         olen--;
       }
-      in++;
-      len++;
+      in++, len++;
     }
     break;
   default:
@@ -1099,9 +1060,9 @@ xmlEncodeCdata(
 int
 xmlDecodeUri(
   unsigned char *out
- ,int olen
+ ,unsigned int olen
  ,const unsigned char *in
- ,int ilen
+ ,unsigned int ilen
 ){
   int len;
   unsigned char c;
@@ -1139,8 +1100,7 @@ nxtH:
         *out++ = c;
         olen--;
       }
-      in++;
-      len++;
+      in++, len++;
       break;
     default:
       goto err;
@@ -1151,8 +1111,7 @@ nxtH:
       *out++ = *in;
       olen--;
     }
-    in++;
-    len++;
+    in++, len++;
     break;
   }
   return len;
@@ -1163,9 +1122,9 @@ err:
 int
 xmlEncodeUri(
   char *out
- ,int olen
+ ,unsigned int olen
  ,const unsigned char *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static const char hex[] = "0123456789ABCDEF";
   int len;
@@ -1183,8 +1142,7 @@ xmlEncodeUri(
       *out++ = *in;
       olen--;
     }
-    in++;
-    len++;
+    in++, len++;
     break;
   default:
     if (olen > 2) {
@@ -1203,9 +1161,9 @@ xmlEncodeUri(
 int
 xmlDecodeBase64(
   unsigned char *out
- ,int olen
+ ,unsigned int olen
  ,char const *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static unsigned char const b64[] = {
     66, 66, 66, 66,  66, 66, 66, 66,  66, 64, 64, 66,  66, 64, 66, 66,
@@ -1273,9 +1231,9 @@ xmlDecodeBase64(
 int
 xmlEncodeBase64(
   char *out
- ,int olen
+ ,unsigned int olen
  ,unsigned char const *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static const char b64[] =
    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -1310,9 +1268,9 @@ xmlEncodeBase64(
 int
 xmlDecodeHex(
   unsigned char *out
- ,int olen
+ ,unsigned int olen
  ,char const *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static unsigned char const hex[] = {
     17, 17, 17, 17,  17, 17, 17, 17,  17, 16, 16, 17,  17, 16, 17, 17,
@@ -1366,9 +1324,9 @@ xmlDecodeHex(
 int
 xmlEncodeHex(
   char *out
- ,int olen
+ ,unsigned int olen
  ,unsigned char const *in
- ,int ilen
+ ,unsigned int ilen
 ){
   static const char hex[] =
    "0123456789ABCDEF";

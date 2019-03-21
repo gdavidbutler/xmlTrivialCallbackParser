@@ -67,7 +67,6 @@ cb(
     printf(":%.*s=(%.*s)\n", nm->l, nm->s, vl->l, vl->s);
     break;
   }
-  fflush(stdout);
   return 0;
 }
 
@@ -135,14 +134,13 @@ main(
   }
   sz = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
-  bf = malloc(sz + 1);
+  bf = malloc(sz);
   if (read(fd, bf, sz) != sz) {
     fprintf(stderr, "%s: read fail on %s\n", argv[0], argv[2]);
     return 1;
   }
   close(fd);
-  bf[sz] = '\0';
-  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof(tg) / sizeof(tg[0]), tg, bf, 0));
+  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof(tg) / sizeof(tg[0]), tg, bf, sz, 0));
   free(bf);
   return 0;
 }
