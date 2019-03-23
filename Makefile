@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -Iinc -Os -g
+CFLAGS = -Wall -Wextra -I. -Os -g
 
 all: main print
 
@@ -8,13 +8,13 @@ clean:
 clobber: clean
 	rm -f main print
 
-xml.o: src/xml.c inc/xml.h
-	cc $(CFLAGS) -c -o xml.o src/xml.c
+xml.o: xml.c xml.h
+	cc $(CFLAGS) -c xml.c
 
-main: test/main.c inc/xml.h xml.o
+main: test/main.c xml.h xml.o
 	cc $(CFLAGS) -o main test/main.c xml.o
 
-print: test/print.c inc/xml.h xml.o
+print: test/print.c xml.h xml.o
 	cc $(CFLAGS) -o print test/print.c xml.o
 
 run: main
