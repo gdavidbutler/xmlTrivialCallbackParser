@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -I. -Os -g
+CFLAGS = -Wall -Wextra -Wpedantic -I. -Os -g
 
 all: main print
 

@@ -23,36 +23,31 @@ xmlParse(
   xmlCb_t c
  ,unsigned int m
  ,xmlSt_t *t
+ ,int w
  ,const unsigned char *s
  ,unsigned int l
 ,void *v
 ){
-  static const unsigned char es[] = "ParseError";
-  const unsigned char *sb;
-  unsigned int tL; /* current level */
-  unsigned int tD; /* gone deeper? for body */
-  xmlSt_t nm;
-  xmlSt_t vl;
-  unsigned int ii; /* in instruction */
-  unsigned int is; /* in section */
+  const unsigned char *sb; /* save original buffer offset */
+  xmlSt_t nm;              /* attribute name */
+  xmlSt_t vl;              /* value */
+  unsigned int tL;         /* current level */
+  unsigned int ii;         /* in instruction */
+  unsigned int is;         /* in section */
+  unsigned int ns;         /* non-space character seen in body */
 
   if (!(sb = s))
     return -1;
-  tD = tL = 0;
+  tL = 0;
   ii = 0;
   is = 0;
+  ns = 0;
 
-tEnd:
+end:
   vl.s = s;
   goto bgn;
 
 err:
-  vl.l = 1;
-  vl.s = s - 1;
-  nm.l = sizeof(es) - 1;
-  nm.s = es;
-  if (c)
-    c(xmlTp_Er, tL, t, &nm, &vl, v);
   l++, s--;
   goto rtn;
 
@@ -73,14 +68,12 @@ atrEq:
   goto rtn;
 
 nlTg:
-  vl.l = 0;
-  if (c && c(xmlTp_Ee, tL, t, 0, &vl, v))
+  if (c && c(xmlTp_Ee, tL, t, 0, 0, v))
     goto rtn;
-  if (tL)
-    tL--;
+  tL--;
   for (; l--;) switch (*s++) {
   case '>':
-    goto tEnd;
+    goto end;
 
   default:
     goto err;
@@ -88,8 +81,7 @@ nlTg:
   goto rtn;
 
 nlAtrVal:
-  vl.l = 0;
-  if (c && c(xmlTp_Ea, tL, t, &nm, &vl, v))
+  if (c && c(xmlTp_Ea, tL, t, 0, &nm, v))
     goto rtn;
   nm.l = 0;
   l++, s--;
@@ -125,7 +117,7 @@ nlAtrVal:
       l++, s--;
       goto nlTg;
     } else
-      goto tEnd;
+      goto end;
 
   case '[':
     if (is)
@@ -177,7 +169,7 @@ atrVal:
     if (nm.l) {
       if (c(xmlTp_Ea, tL, t, &nm, &vl, v))
         goto rtn;
-    } else if (c(xmlTp_Ea, tL, t, &vl, &nm, v))
+    } else if (c(xmlTp_Ea, tL, t, 0, &vl, v))
       goto rtn;
   }
   for (; l--;) switch (*s++) {
@@ -212,7 +204,7 @@ atrVal:
       l++, s--;
       goto nlTg;
     } else
-      goto tEnd;
+      goto end;
 
   case '[':
     if (is)
@@ -249,7 +241,7 @@ atrValSq:
 
 atrValBr:
   vl.s = s;
-  ++is;
+  is++;
   for (; l--;) switch (*s++) {
   case '[':
     is++;
@@ -265,22 +257,14 @@ atrValBr:
   goto rtn;
 
 eTgNm:
-  if (tL)
-    (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
-  else {
-    (t + tL)->l = s - (t + tL)->s - 1;
-    tL++;
-  }
-  if (tL <= tD)
-    vl.l = 0;
-  if (c && c(xmlTp_Ee, tL, t, 0, &vl, v))
+  (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
+  if (c && c(xmlTp_Ee, tL, t, 0, 0, v))
     goto rtn;
-  if (tL)
-    tL--;
+  tL--;
   l++, s--;
   for (; l--;) switch (*s++) {
   case '>':
-    goto tEnd;
+    goto end;
 
   default:
     goto err;
@@ -288,12 +272,9 @@ eTgNm:
   goto rtn;
 
 eNm:
-  if (tL)
-    (t + tL - 1)->s = s - 1;
-  else if (tL == m)
-    goto rtn;
-  else
-    (t + tL)->s = s - 1;
+  if (!tL)
+    goto err;
+  (t + tL - 1)->s = s - 1;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'': case '/': case '<':
@@ -327,7 +308,7 @@ sTgNm:
     else if (*(t + tL)->s == '!')
       is = 1;
   }
-  tD = tL++;
+  tL++;
   if (c && c(xmlTp_Eb, tL, t, 0, 0, v))
     goto rtn;
   l++, s--;
@@ -363,7 +344,7 @@ sTgNm:
       l++, s--;
       goto nlTg;
     } else
-      goto tEnd;
+      goto end;
 
   case '[':
     if (is)
@@ -408,6 +389,8 @@ sNm:
 
 sTg:
   vl.l = s - vl.s - 1;
+  if (c && vl.l && (w || ns) && c(xmlTp_Ec, tL, t, 0, &vl, v))
+    goto rtn;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'':
@@ -425,7 +408,7 @@ sTg:
          && *(s + 2) == '-'
          && *(s + 3) == '>') {
           l -= 4, s += 4;
-          goto tEnd;
+          goto end;
         }
       l--, s++;
       goto rtn;
@@ -441,7 +424,11 @@ sTg:
   goto rtn;
 
 bgn:
+  ns = 0;
   for (; l--;) switch (*s++) {
+  case '\t': case '\n': case '\r': case ' ':
+    break;
+
   case '<':
     if (l > 3
      && *(s + 0) == '!'
@@ -468,8 +455,13 @@ bgn:
       break;
 
   default:
+    ns = 1;
     break;
   }
+
+  vl.l = s - vl.s - 1;
+  if (c && vl.l && (w || ns))
+    c(xmlTp_Ec, tL, t, 0, &vl, v);
 
 rtn:
   return s - sb;

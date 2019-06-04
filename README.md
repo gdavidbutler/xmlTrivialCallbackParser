@@ -13,5 +13,5 @@ Also included are some "coders", often used by XML:
 
 Some examples of using this:
 
-* test/main.c: example of using the coders (./main coder) and parsing nasty XML constructs (./main 1 test/test.xml).
-* test/print.c: XML on standard input and indented XML on standard output (./print < test/test.xml).
+* test/main.c: example of using the coders (./main coder) and parsing XML (./main 1 test/test.xml) preserving body whitespace.
+* test/print.c: XML on standard input and indented XML on standard output (./print < test/test.xml) ignoring body whitespace.

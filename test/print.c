@@ -21,14 +21,17 @@ cb(
     if (P) {
       putchar('>');
       putchar('\n');
-    }
-    P = 1;
+    } else
+      P = 1;
     for (i = 1; i < (int)l; ++i)
       putchar(' ');
     printf("<%.*s", (tg + l - 1)->l, (tg + l - 1)->s);
     break;
   case xmlTp_Ea:
-    printf(" %.*s", nm->l, nm->s);
+    if (nm)
+      printf(" %.*s=", nm->l, nm->s);
+    else
+      printf(" ");
     if (vl->l) {
       unsigned char *d;
 
@@ -36,30 +39,21 @@ cb(
       if (!(d = malloc(vl->l))
        || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
        || i > (int)vl->l)
-        printf("=\"%.*s\"", vl->l, vl->s);
+        printf("\"%.*s\"", vl->l, vl->s);
       else
-        printf("=\"%.*s\"", i, d);
+        printf("\"%.*s\"", i, d);
       free(d);
     }
     break;
-  case xmlTp_Ee:
-    if (!vl->l) {
-      if (*(tg + l - 1)->s == '?') {
-        putchar('?');
-      } else if (*(tg + l - 1)->s != '!') {
-        putchar('>');
-        putchar('\n');
-        for (i = 1; i < (int)l; ++i)
-          putchar(' ');
-        printf("</%.*s", (tg + l - 1)->l, (tg + l - 1)->s);
-      }
-    } else {
+  case xmlTp_Ec:
+    {
       unsigned char *d;
 
-      putchar('>');
-      putchar('\n');
-      for (i = 0; i < (int)l; ++i)
-        putchar(' ');
+      if (P) {
+        putchar('>');
+        putchar('\n');
+        P = 0;
+      }
       i = -1;
       if (!(d = malloc(vl->l))
        || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
@@ -68,19 +62,23 @@ cb(
       else
         printf("%.*s\n", i, d);
       free(d);
+    }
+    break;
+  case xmlTp_Ee:
+    if (*(tg + l - 1)->s == '?')
+      putchar('?');
+    else if (*(tg + l - 1)->s != '!') {
+      if (P) {
+        putchar('>');
+        putchar('\n');
+      }
       for (i = 1; i < (int)l; ++i)
         putchar(' ');
       printf("</%.*s", (tg + l - 1)->l, (tg + l - 1)->s);
     }
-    break;
-  case xmlTp_Er:
-    printf("! ");
-    if (l) {
-      printf("%.*s", tg->l, tg->s);
-      for (l--, tg++; l; l--, tg++)
-        printf("/%.*s", tg->l, tg->s);
-    }
-    printf(":%.*s=(%.*s)", nm->l, nm->s, vl->l, vl->s);
+    putchar('>');
+    putchar('\n');
+    P = 0;
     break;
   }
   return 0;
@@ -103,7 +101,7 @@ main(
       return -1;
   }
   P = 0;
-  xmlParse(cb, sizeof(tg) / sizeof(tg[0]), tg, bf, sz, 0);
+  xmlParse(cb, sizeof(tg) / sizeof(tg[0]), tg, 0, bf, sz, 0);
   if (P) {
     putchar('>');
     putchar('\n');

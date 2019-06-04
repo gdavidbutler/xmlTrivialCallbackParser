@@ -16,46 +16,69 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* callback event types */
-typedef enum {
-  xmlTp_Eb /* element begin */
- ,xmlTp_Ea /* element attribute */
- ,xmlTp_Ee /* element end */
- ,xmlTp_Er /* syntax error */
-} xmlTp_t;
-
 /* pointers referencing fragments of constant buffer must include length */
 typedef struct {
   const unsigned char *s;
   unsigned int l;
 } xmlSt_t;
 
-/* prototype of a callback function */
+/* callback event types */
+typedef enum {
+  xmlTp_Eb /* element begin     - elementAttributeName and ecBodyOrEaValue are NULL */
+ ,xmlTp_Ea /* element attribute - elementAttributeName is NULL if the value has no name */
+ ,xmlTp_Ec /* element content   - elementAttributeName is NULL */
+ ,xmlTp_Ee /* element end       - elementAttributeName and ecBodyOrEaValue are NULL */
+} xmlTp_t;
+
+/* prototype of callback function */
 /* returns 0 on success else aborts parse */
 typedef int (*xmlCb_t)(
   xmlTp_t
  ,unsigned int numberOfElementTagNames
  ,const xmlSt_t *elementTagName
  ,const xmlSt_t *elementAttributeName
- ,const xmlSt_t *EeBodyOrEaValue
+ ,const xmlSt_t *ecBodyOrEaValue
  ,void *userContext
 );
 
 /* return -1 on error else offset of last char parsed */
 /* provide a tag buffer large enough for the deepest level of nesting supported */
-int xmlParse(xmlCb_t, unsigned int numberOfElementTagBuf, xmlSt_t *elementTagBuf, const unsigned char *xml, unsigned int xlen, void *userContext);
+int xmlParse(
+  xmlCb_t
+ ,unsigned int numberOfElementTagBuf
+ ,xmlSt_t *elementTagBuf
+ ,int whitespaceContent
+ ,const unsigned char *xml
+ ,unsigned int xlen
+ ,void *userContext
+);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlDecodeBody(unsigned char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlDecodeBody(
+  unsigned char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeString(unsigned char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlEncodeString(
+  unsigned char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeCdata(unsigned char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlEncodeCdata(
+  unsigned char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);
 
 /* For <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"> */
 
@@ -63,11 +86,21 @@ int xmlEncodeCdata(unsigned char *out, unsigned int olen, const unsigned char *i
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlDecodeUri(unsigned char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlDecodeUri(
+  unsigned char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeUri(char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlEncodeUri(
+  char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);
 
 /* <foo type="xs:base64Binary"></foo> */
 
@@ -76,21 +109,41 @@ int xmlEncodeUri(char *out, unsigned int olen, const unsigned char *in, unsigned
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlDecodeBase64(unsigned char *out, unsigned int olen, const char *in, unsigned int ilen);
+int xmlDecodeBase64(
+  unsigned char *out
+ ,unsigned int olen
+ ,const char *in
+ ,unsigned int ilen
+);
 
 /* estimated length of needed out buffer */
 #define xmlEncodeBase64Need(inl) (((inl + 2) / 3) * 4)
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeBase64(char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlEncodeBase64(
+  char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);
 
 /* <foo type="xs:hexBinary"></foo> */
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlDecodeHex(unsigned char *out, unsigned int olen, const char *in, unsigned int ilen);
+int xmlDecodeHex(
+  unsigned char *out
+ ,unsigned int olen
+ ,const char *in
+ ,unsigned int ilen
+);
 
 /* return -1 on error else the length of out */
 /* if length returned is more than length provided, allocate needed memory and retry */
-int xmlEncodeHex(char *out, unsigned int olen, const unsigned char *in, unsigned int ilen);
+int xmlEncodeHex(
+  char *out
+ ,unsigned int olen
+ ,const unsigned char *in
+ ,unsigned int ilen
+);

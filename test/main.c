@@ -18,15 +18,19 @@ cb(
   (void)v;
   switch (typ) {
   case xmlTp_Eb:
-    printf("B /%.*s", tg->l, tg->s);
-    for (l--, tg++; l; l--, tg++)
+    printf("B ");
+    for (; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
     printf("\n");
     break;
   case xmlTp_Ea:
-    printf("A /%.*s", tg->l, tg->s);
-    for (l--, tg++; l; l--, tg++)
+    printf("A ");
+    for (; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
+    if (nm)
+      printf(":\"%.*s\"=", nm->l, nm->s);
+    else
+      printf(":");
     {
       unsigned char *d;
 
@@ -34,16 +38,17 @@ cb(
       if (!(d = malloc(vl->l))
        || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
        || i > (int)vl->l)
-        printf(":\"%.*s\"=\"%.*s\"(%d:%u)\n", nm->l, nm->s, vl->l, vl->s, i, vl->l);
+        printf("\"%.*s\"(%d:%u)\n", vl->l, vl->s, i, vl->l);
       else
-        printf(":\"%.*s\"=\"%.*s\"(%.*s)\n", nm->l, nm->s, vl->l, vl->s, i, d);
+        printf("\"%.*s\"(%.*s)\n", vl->l, vl->s, i, d);
       free(d);
     }
     break;
-  case xmlTp_Ee:
-    printf("E /%.*s", tg->l, tg->s);
-    for (l--, tg++; l; l--, tg++)
+  case xmlTp_Ec:
+    printf("C ");
+    for (; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
+    printf(":");
     {
       unsigned char *d;
 
@@ -57,14 +62,11 @@ cb(
       free(d);
     }
     break;
-  case xmlTp_Er:
-    printf("! ");
-    if (l) {
-      printf("%.*s", tg->l, tg->s);
-      for (l--, tg++; l; l--, tg++)
-        printf("/%.*s", tg->l, tg->s);
-    }
-    printf(":%.*s=(%.*s)\n", nm->l, nm->s, vl->l, vl->s);
+  case xmlTp_Ee:
+    printf("E ");
+    for (; l; l--, tg++)
+      printf("/%.*s", tg->l, tg->s);
+    printf("\n");
     break;
   }
   return 0;
@@ -140,7 +142,7 @@ main(
     return 1;
   }
   close(fd);
-  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof(tg) / sizeof(tg[0]), tg, bf, sz, 0));
+  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof(tg) / sizeof(tg[0]), tg, 1, bf, sz, 0));
   free(bf);
   return 0;
 }
