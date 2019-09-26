@@ -81,7 +81,7 @@ cb(
     P = 0;
     break;
   }
-  return 0;
+  return (0);
 }
 
 int
@@ -93,18 +93,18 @@ main(
   int i;
 
   if (!(bf = malloc(BUFSIZ)))
-    return -1;
+    return (-1);
   sz = 0;
   while ((i = fread(bf + sz, 1, BUFSIZ, stdin)) > 0) {
     sz += i;
     if (!(bf = realloc(bf, sz + BUFSIZ)))
-      return -1;
+      return (-1);
   }
   P = 0;
-  xmlParse(cb, sizeof(tg) / sizeof(tg[0]), tg, 0, bf, sz, 0);
+  xmlParse(cb, sizeof (tg) / sizeof (tg[0]), tg, 0, bf, sz, 0);
   if (P) {
     putchar('>');
     putchar('\n');
   }
-  return 0;
+  return (0);
 }

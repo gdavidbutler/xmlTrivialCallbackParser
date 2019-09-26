@@ -37,7 +37,7 @@ xmlParse(
   unsigned int ns;         /* non-space character seen in body */
 
   if (!(sb = s))
-    return -1;
+    return (-1);
   tL = 0;
   ii = 0;
   is = 0;
@@ -464,7 +464,7 @@ bgn:
     c(xmlTp_Ec, tL, t, 0, &vl, v);
 
 rtn:
-  return s - sb;
+  return (s - sb);
 }
 
 int
@@ -808,9 +808,9 @@ enc:
       goto err;
     break;
   }
-  return len;
+  return (len);
 err:
-  return -1;
+  return (-1);
 }
 
 int
@@ -826,7 +826,7 @@ xmlEncodeString(
   len = 0;
   for (; ilen--;) switch (*in) {
   case 0x00:
-    return -1;
+    return (-1);
     break;
   case            0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
   case 0x08:                       case 0x0b: case 0x0c:            case 0x0e: case 0x0f:
@@ -980,10 +980,10 @@ xmlEncodeString(
         in += 6;
       len += 6;
     } else
-      return -1;
+      return (-1);
     break;
   }
-  return len;
+  return (len);
 }
 
 int
@@ -999,14 +999,14 @@ xmlEncodeCdata(
   unsigned int i;
 
   len = 0;
-  for (i = 0; i < sizeof(b) - 1; i++, len++)
+  for (i = 0; i < sizeof (b) - 1; i++, len++)
     if (olen > 0) {
       *out++ = b[i];
       olen--;
     }
   for (; ilen--;) switch (*in) {
   case 0x00:
-    return -1;
+    return (-1);
     break;
   case ']':
     if (ilen > 1
@@ -1022,12 +1022,12 @@ xmlEncodeCdata(
         olen--;
       }
       in++, len++;
-      for (i = 0; i < sizeof(e) - 1; i++, len++)
+      for (i = 0; i < sizeof (e) - 1; i++, len++)
         if (olen > 0) {
           *out++ = e[i];
           olen--;
         }
-      for (i = 0; i < sizeof(b) - 1; i++, len++)
+      for (i = 0; i < sizeof (b) - 1; i++, len++)
         if (olen > 0) {
           *out++ = b[i];
           olen--;
@@ -1121,15 +1121,15 @@ xmlEncodeCdata(
         in += 6;
       len += 6;
     } else
-      return -1;
+      return (-1);
     break;
   }
-  for (i = 0; i < sizeof(e) - 1; i++, len++)
+  for (i = 0; i < sizeof (e) - 1; i++, len++)
     if (olen > 0) {
       *out++ = e[i];
       olen--;
     }
-  return len;
+  return (len);
 }
 
 int
@@ -1189,9 +1189,9 @@ nxtH:
     in++, len++;
     break;
   }
-  return len;
+  return (len);
 err:
-  return -1;
+  return (-1);
 }
 
 int
@@ -1230,7 +1230,7 @@ xmlEncodeUri(
     len += 3;
     break;
   }
-  return len;
+  return (len);
 }
 
 int
@@ -1268,7 +1268,7 @@ xmlDecodeBase64(
 
     switch ((c = b64[*(unsigned char*)in++])) {
     case 66: /* invalid */
-      return -1;
+      return (-1);
     case 64: /* whitespace */
       continue;
     case 65: /* pad */
@@ -1300,7 +1300,7 @@ xmlDecodeBase64(
       *out++ = buf >> 4;
     len++;
   }
-  return len;
+  return (len);
 }
 
 int
@@ -1337,7 +1337,7 @@ xmlEncodeBase64(
     }
     len += 4;
   }
-  return len;
+  return (len);
 }
 
 int
@@ -1375,7 +1375,7 @@ xmlDecodeHex(
 
     switch ((c = hex[*(unsigned char*)in++])) {
     case 17: /* invalid */
-      return -1;
+      return (-1);
     case 16: /* whitespace */
       continue;
     default:
@@ -1392,8 +1392,8 @@ xmlDecodeHex(
     }
   }
   if (buf != 1)
-    return -1;
-  return len;
+    return (-1);
+  return (len);
 }
 
 int
@@ -1414,5 +1414,5 @@ xmlEncodeHex(
       olen -= 2;
     }
   }
-  return len;
+  return (len);
 }

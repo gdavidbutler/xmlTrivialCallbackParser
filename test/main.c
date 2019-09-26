@@ -69,7 +69,7 @@ cb(
     printf("\n");
     break;
   }
-  return 0;
+  return (0);
 }
 
 int
@@ -91,58 +91,58 @@ main(
 
   if (argc == 2) {
     if (!(bf = malloc(BUFSIZ)))
-      return 2;
-    if ((sz = xmlEncodeString(bf, BUFSIZ, enc, sizeof(enc) - 1)) > BUFSIZ)
-      return 2;
+      return (2);
+    if ((sz = xmlEncodeString(bf, BUFSIZ, enc, sizeof (enc) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlEncodeString(%s)\n->\n%.*s\n", enc, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeCdata(bf, BUFSIZ, enc, sizeof(enc) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlEncodeCdata(bf, BUFSIZ, enc, sizeof (enc) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlEncodeCdata(%s)\n->\n%.*s\n", enc, sz, bf);
     putchar('\n');
-    if ((sz = xmlDecodeUri(bf, BUFSIZ, uri, sizeof(uri) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlDecodeUri(bf, BUFSIZ, uri, sizeof (uri) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlDecodeUri(%s)\n->\n%.*s\n", uri, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeUri((char *)bf, BUFSIZ, sur, sizeof(sur) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlEncodeUri((char *)bf, BUFSIZ, sur, sizeof (sur) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlEncodeUri(%s)\n->\n%.*s\n", sur, sz, bf);
     putchar('\n');
-    if ((sz = xmlDecodeBase64((unsigned char *)bf, BUFSIZ, b64, sizeof(b64) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlDecodeBase64((unsigned char *)bf, BUFSIZ, b64, sizeof (b64) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlDecodeBase64(%s)\n->\n%.*s\n", b64, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeBase64((char *)bf, BUFSIZ, s64, sizeof(s64) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlEncodeBase64((char *)bf, BUFSIZ, s64, sizeof (s64) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlEncodeBase64(%s)\n->\n%.*s\n", s64, sz, bf);
     putchar('\n');
-    if ((sz = xmlDecodeHex((unsigned char *)bf, BUFSIZ, hex, sizeof(hex) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlDecodeHex((unsigned char *)bf, BUFSIZ, hex, sizeof (hex) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlDecodeHex(%s)\n->\n%.*s\n", hex, sz, bf);
     putchar('\n');
-    if ((sz = xmlEncodeHex((char *)bf, BUFSIZ, shx, sizeof(shx) - 1)) > BUFSIZ)
-      return 2;
+    if ((sz = xmlEncodeHex((char *)bf, BUFSIZ, shx, sizeof (shx) - 1)) > BUFSIZ)
+      return (2);
     printf("xmlEncodeHex(%s)\n->\n%.*s\n", shx, sz, bf);
     free(bf);
-    return 0;
+    return (0);
   }
   if (argc != 3) {
     fprintf(stderr, "Usage: %s any | 0|1 file\n", argv[0]);
-    return 1;
+    return (1);
   }
   if ((fd = open(argv[2], O_RDONLY)) < 0) {
     fprintf(stderr, "%s: Can't open %s\n", argv[0], argv[2]);
-    return 1;
+    return (1);
   }
   sz = lseek(fd, 0, SEEK_END);
   lseek(fd, 0, SEEK_SET);
   bf = malloc(sz);
   if (read(fd, bf, sz) != sz) {
     fprintf(stderr, "%s: read fail on %s\n", argv[0], argv[2]);
-    return 1;
+    return (1);
   }
   close(fd);
-  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof(tg) / sizeof(tg[0]), tg, 1, bf, sz, 0));
+  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof (tg) / sizeof (tg[0]), tg, 1, bf, sz, 0));
   free(bf);
-  return 0;
+  return (0);
 }
