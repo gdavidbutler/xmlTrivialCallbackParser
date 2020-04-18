@@ -142,7 +142,7 @@ main(
     return (1);
   }
   close(fd);
-  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof (tg) / sizeof (tg[0]), tg, 1, bf, sz, 0));
+  printf("%d %d\n", sz, xmlParse(atoi(argv[1]) ? cb : 0, sizeof (tg) / sizeof (tg[0]), tg, bf, sz, 0));
   free(bf);
   return (0);
 }

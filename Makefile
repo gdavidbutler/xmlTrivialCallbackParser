@@ -1,12 +1,9 @@
-CFLAGS = -Wall -Wextra -Wpedantic -I. -Os -g
+CFLAGS = -I. -Os -g
 
-all: main print
+all: xml.o main print
 
 clean:
-	rm -f xml.o
-
-clobber: clean
-	rm -f main print
+	rm -f xml.o main print
 
 xml.o: xml.c xml.h
 	cc $(CFLAGS) -c xml.c
@@ -17,7 +14,7 @@ main: test/main.c xml.h xml.o
 print: test/print.c xml.h xml.o
 	cc $(CFLAGS) -o print test/print.c xml.o
 
-run: main
+check: main
 	./main 0
 	./main 0 test/test.xml
 	./main 1 test/test.xml

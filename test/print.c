@@ -46,7 +46,7 @@ cb(
     }
     break;
   case xmlTp_Ec:
-    {
+    if (nm) {
       unsigned char *d;
 
       if (P) {
@@ -101,7 +101,7 @@ main(
       return (-1);
   }
   P = 0;
-  xmlParse(cb, sizeof (tg) / sizeof (tg[0]), tg, 0, bf, sz, 0);
+  xmlParse(cb, sizeof (tg) / sizeof (tg[0]), tg, bf, sz, 0);
   if (P) {
     putchar('>');
     putchar('\n');

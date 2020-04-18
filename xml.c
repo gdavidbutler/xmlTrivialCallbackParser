@@ -23,7 +23,6 @@ xmlParse(
   xmlCb_t c
  ,unsigned int m
  ,xmlSt_t *t
- ,int w
  ,const unsigned char *s
  ,unsigned int l
 ,void *v
@@ -31,17 +30,17 @@ xmlParse(
   const unsigned char *sb; /* save original buffer offset */
   xmlSt_t nm;              /* attribute name */
   xmlSt_t vl;              /* value */
+  long ns;                 /* non-space character seen in body */
   unsigned int tL;         /* current level */
   unsigned int ii;         /* in instruction */
   unsigned int is;         /* in section */
-  unsigned int ns;         /* non-space character seen in body */
 
   if (!(sb = s))
     return (-1);
+  ns = 0;
   tL = 0;
   ii = 0;
   is = 0;
-  ns = 0;
 
 end:
   vl.s = s;
@@ -389,7 +388,7 @@ sNm:
 
 sTg:
   vl.l = s - vl.s - 1;
-  if (c && vl.l && (w || ns) && c(xmlTp_Ec, tL, t, 0, &vl, v))
+  if (c && vl.l && c(xmlTp_Ec, tL, t, (void *)ns, &vl, v))
     goto rtn;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
@@ -455,13 +454,14 @@ bgn:
       break;
 
   default:
-    ns = 1;
+    if (!ns)
+      ns = -1;
     break;
   }
 
   vl.l = s - vl.s - 1;
-  if (c && vl.l && (w || ns))
-    c(xmlTp_Ec, tL, t, 0, &vl, v);
+  if (c && vl.l)
+    c(xmlTp_Ec, tL, t, (void *)ns, &vl, v);
 
 rtn:
   return (s - sb);

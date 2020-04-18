@@ -26,7 +26,7 @@ typedef struct {
 typedef enum {
   xmlTp_Eb /* element begin     - elementAttributeName and ecBodyOrEaValue are NULL */
  ,xmlTp_Ea /* element attribute - elementAttributeName is NULL if the value has no name */
- ,xmlTp_Ec /* element content   - elementAttributeName is NULL */
+ ,xmlTp_Ec /* element content   - elementAttributeName is NULL if ecBodyOrEaValue is only whitespace */
  ,xmlTp_Ee /* element end       - elementAttributeName and ecBodyOrEaValue are NULL */
 } xmlTp_t;
 
@@ -47,7 +47,6 @@ int xmlParse(
   xmlCb_t
  ,unsigned int numberOfElementTagBuf
  ,xmlSt_t *elementTagBuf
- ,int whitespaceContent
  ,const unsigned char *xml
  ,unsigned int xlen
  ,void *userContext
