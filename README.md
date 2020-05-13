@@ -11,6 +11,8 @@ Also included are some "coders", often used by XML:
 * Hex encode and decode
 * Base64 encode and decode
 
+For a DOM parser, see my [xmlTrivialDom](https://github.com/gdavidbutler/xmlTrivialDom).
+
 Some examples of using this:
 
 * test/main.c: example of using the coders (./main coder) and parsing XML (./main 1 test/test.xml) preserving body whitespace.
