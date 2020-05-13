@@ -459,7 +459,7 @@ bgn:
     break;
   }
 
-  vl.l = s - vl.s - 1;
+  vl.l = s - vl.s;
   if (c && vl.l)
     c(xmlTp_Ec, tL, t, (void *)ns, &vl, v);
 
