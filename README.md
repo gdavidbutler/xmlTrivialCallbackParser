@@ -15,5 +15,5 @@ For a DOM parser, see my [xmlTrivialDom](https://github.com/gdavidbutler/xmlTriv
 
 Some examples of using this:
 
-* test/main.c: example of using the coders (./main coder) and parsing XML (./main 1 test/test.xml) preserving body whitespace.
-* test/print.c: XML on standard input and indented XML on standard output (./print < test/test.xml) ignoring body whitespace.
+* test/main.c: example of using the coders (./main coder) and parsing XML (./main 1 test/test.xml) preserving whitespace only bodies.
+* test/print.c: XML on standard input and indented XML on standard output (./print < test/test.xml) ignoring whitespace only bodies.
