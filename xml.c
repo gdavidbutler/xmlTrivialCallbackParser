@@ -43,6 +43,7 @@ xmlParse(
   is = 0;
 
 end:
+  nm.l = 0;
   vl.s = s;
   goto bgn;
 
@@ -168,6 +169,7 @@ atrVal:
     if (nm.l) {
       if (c(xmlTp_Ea, tL, t, &nm, &vl, v))
         goto rtn;
+      nm.l = 0;
     } else if (c(xmlTp_Ea, tL, t, 0, &vl, v))
       goto rtn;
   }

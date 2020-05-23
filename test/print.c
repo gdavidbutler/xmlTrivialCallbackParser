@@ -43,7 +43,8 @@ cb(
       else
         printf("\"%.*s\"", i, d);
       free(d);
-    }
+    } else
+      printf("\"\"");
     break;
   case xmlTp_Ec:
     if (nm) {
