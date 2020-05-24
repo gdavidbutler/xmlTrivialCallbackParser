@@ -741,7 +741,8 @@ enc:
       } else
         in++;
       len++;
-    } else if ((*in & 0xe0) == 0xc0 /* 2 bytes */
+    } else if (ilen > 0
+            && (*in & 0xe0) == 0xc0 /* 2 bytes */
             && (*(in + 1) & 0xc0) == 0x80) {
       if (olen > 1) {
         *out++ = *in++;
@@ -750,7 +751,9 @@ enc:
       } else
         in += 2;
       len += 2;
-    } else if ((*in & 0xf0) == 0xe0 /* 3 bytes */
+      ilen--;
+    } else if (ilen > 1
+            && (*in & 0xf0) == 0xe0 /* 3 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80) {
       if (olen > 2) {
@@ -761,7 +764,9 @@ enc:
       } else
         in += 3;
       len += 3;
-    } else if ((*in & 0xf8) == 0xf0 /* 4 bytes */
+      ilen -= 2;
+    } else if (ilen > 2
+            && (*in & 0xf8) == 0xf0 /* 4 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80) {
@@ -774,7 +779,9 @@ enc:
       } else
         in += 4;
       len += 4;
-    } else if ((*in & 0xfc) == 0xf8 /* 5 bytes */
+      ilen -= 3;
+    } else if (ilen > 3
+            && (*in & 0xfc) == 0xf8 /* 5 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80
@@ -789,7 +796,9 @@ enc:
       } else
         in += 5;
       len += 5;
-    } else if ((*in & 0xfe) == 0xfc /* 6 bytes */
+      ilen -= 4;
+    } else if (ilen > 4
+            && (*in & 0xfe) == 0xfc /* 6 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80
@@ -806,6 +815,7 @@ enc:
       } else
         in += 6;
       len += 6;
+      ilen -= 5;
     } else
       goto err;
     break;
@@ -830,7 +840,7 @@ xmlEncodeString(
   case 0x08:                       case 0x0b: case 0x0c:            case 0x0e: case 0x0f:
   case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
   case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-  case                                                                              0x7f:
+                                                                               case 0x7f:
     return (-1);
     break;
   case '&':
@@ -902,7 +912,8 @@ xmlEncodeString(
       } else
         in++;
       len++;
-    } else if ((*in & 0xe0) == 0xc0 /* 2 bytes */
+    } else if (ilen > 0
+            && (*in & 0xe0) == 0xc0 /* 2 bytes */
             && (*(in + 1) & 0xc0) == 0x80) {
       if (olen > 1) {
         *out++ = *in++;
@@ -911,7 +922,9 @@ xmlEncodeString(
       } else
         in += 2;
       len += 2;
-    } else if ((*in & 0xf0) == 0xe0 /* 3 bytes */
+      ilen--;
+    } else if (ilen > 1
+            && (*in & 0xf0) == 0xe0 /* 3 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80) {
       if (olen > 2) {
@@ -922,7 +935,9 @@ xmlEncodeString(
       } else
         in += 3;
       len += 3;
-    } else if ((*in & 0xf8) == 0xf0 /* 4 bytes */
+      ilen -= 2;
+    } else if (ilen > 2
+            && (*in & 0xf8) == 0xf0 /* 4 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80) {
@@ -935,7 +950,9 @@ xmlEncodeString(
       } else
         in += 4;
       len += 4;
-    } else if ((*in & 0xfc) == 0xf8 /* 5 bytes */
+      ilen -= 3;
+    } else if (ilen > 3
+            && (*in & 0xfc) == 0xf8 /* 5 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80
@@ -950,7 +967,9 @@ xmlEncodeString(
       } else
         in += 5;
       len += 5;
-    } else if ((*in & 0xfe) == 0xfc /* 6 bytes */
+      ilen -= 4;
+    } else if (ilen > 4
+            && (*in & 0xfe) == 0xfc /* 6 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80
@@ -967,6 +986,7 @@ xmlEncodeString(
       } else
         in += 6;
       len += 6;
+      ilen -= 5;
     } else
       return (-1);
     break;
@@ -997,7 +1017,7 @@ xmlEncodeCdata(
   case 0x08:                       case 0x0b: case 0x0c:            case 0x0e: case 0x0f:
   case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
   case 0x18: case 0x19: case 0x1a: case 0x1b: case 0x1c: case 0x1d: case 0x1e: case 0x1f:
-  case                                                                              0x7f:
+                                                                               case 0x7f:
     return (-1);
     break;
   case ']':
@@ -1047,7 +1067,8 @@ xmlEncodeCdata(
       } else
         in++;
       len++;
-    } else if ((*in & 0xe0) == 0xc0 /* 2 bytes */
+    } else if (ilen > 0
+            && (*in & 0xe0) == 0xc0 /* 2 bytes */
             && (*(in + 1) & 0xc0) == 0x80) {
       if (olen > 1) {
         *out++ = *in++;
@@ -1056,7 +1077,9 @@ xmlEncodeCdata(
       } else
         in += 2;
       len += 2;
-    } else if ((*in & 0xf0) == 0xe0 /* 3 bytes */
+      ilen--;
+    } else if (ilen > 1
+            && (*in & 0xf0) == 0xe0 /* 3 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80) {
       if (olen > 2) {
@@ -1067,7 +1090,9 @@ xmlEncodeCdata(
       } else
         in += 3;
       len += 3;
-    } else if ((*in & 0xf8) == 0xf0 /* 4 bytes */
+      ilen -= 2;
+    } else if (ilen > 2
+            && (*in & 0xf8) == 0xf0 /* 4 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80) {
@@ -1080,7 +1105,9 @@ xmlEncodeCdata(
       } else
         in += 4;
       len += 4;
-    } else if ((*in & 0xfc) == 0xf8 /* 5 bytes */
+      ilen -= 3;
+    } else if (ilen > 3
+            && (*in & 0xfc) == 0xf8 /* 5 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80
@@ -1095,7 +1122,9 @@ xmlEncodeCdata(
       } else
         in += 5;
       len += 5;
-    } else if ((*in & 0xfe) == 0xfc /* 6 bytes */
+      ilen -= 4;
+    } else if (ilen > 4
+            && (*in & 0xfe) == 0xfc /* 6 bytes */
             && (*(in + 1) & 0xc0) == 0x80
             && (*(in + 2) & 0xc0) == 0x80
             && (*(in + 3) & 0xc0) == 0x80
@@ -1112,6 +1141,7 @@ xmlEncodeCdata(
       } else
         in += 6;
       len += 6;
+      ilen -= 5;
     } else
       return (-1);
     break;
