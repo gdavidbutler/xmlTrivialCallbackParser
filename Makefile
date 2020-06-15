@@ -14,7 +14,7 @@ main: test/main.c xml.h xml.o
 print: test/print.c xml.h xml.o
 	cc $(CFLAGS) -o print test/print.c xml.o
 
-check: main
+check: main print
 	./main 0
 	./main 0 test/test.xml
 	./main 1 test/test.xml
