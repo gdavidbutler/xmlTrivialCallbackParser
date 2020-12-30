@@ -21,7 +21,7 @@ cb(
     printf("B ");
     for (; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
-    printf(" @%p\n", (const char *)vl);
+    printf(" @%p\n", (void *)vl);
     break;
   case xmlTp_Ea:
     printf("A ");
@@ -66,7 +66,7 @@ cb(
     printf("E ");
     for (; l; l--, tg++)
       printf("/%.*s", tg->l, tg->s);
-    printf(" @%p\n", (const char *)vl);
+    printf(" @%p\n", (void *)vl);
     break;
   }
   return (0);
