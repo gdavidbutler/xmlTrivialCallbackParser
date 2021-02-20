@@ -63,12 +63,12 @@ atrEq:
     goto atrValSq;
 
   default:
-    goto err;
+    goto atr;
   }
   goto rtn;
 
 nlTg:
-  if (c && (nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v))
+  if (c && ((nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v)))
     goto rtn;
   tL--;
   for (; l--;) switch (*s++) {
@@ -102,7 +102,7 @@ nlAtrVal:
       goto nlTg;
 
   case '?':
-    if (ii) {
+    if (ii && *s == '>') {
       ii = 0;
       goto nlTg;
     } else
@@ -112,7 +112,9 @@ nlAtrVal:
     goto err;
 
   case '>':
-    if (is) {
+    if (ii)
+      goto atr;
+    else if (is) {
       is = 0;
       l++, s--;
       goto nlTg;
@@ -152,7 +154,7 @@ atr:
   nm.s = s - 1;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
-  case '"': case '\'': case '/': case '?': case '=': case '>':
+  case '"': case '\'': case '=': case '>':
     goto atrNm;
 
   case '<':
@@ -190,7 +192,7 @@ atrVal:
       goto nlTg;
 
   case '?':
-    if (ii) {
+    if (ii && *s == '>') {
       ii = 0;
       goto nlTg;
     } else
@@ -200,7 +202,9 @@ atrVal:
     goto err;
 
   case '>':
-    if (is) {
+    if (ii)
+      goto atr;
+    else if (is) {
       is = 0;
       l++, s--;
       goto nlTg;
@@ -259,7 +263,7 @@ atrValBr:
 
 eTgNm:
   (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
-  if (c && (nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v))
+  if (c && ((nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v)))
     goto rtn;
   tL--;
   l++, s--;
@@ -310,7 +314,7 @@ sTgNm:
       is = 1;
   }
   tL++;
-  if (c && (nm.s = (t + tL - 1)->s - 1), c(xmlTp_Eb, tL, t, 0, &nm, v))
+  if (c && ((nm.s = (t + tL - 1)->s - 1), c(xmlTp_Eb, tL, t, 0, &nm, v)))
     goto rtn;
   l++, s--;
   for (; l--;) switch (*s++) {
@@ -330,7 +334,7 @@ sTgNm:
       goto nlTg;
 
   case '?':
-    if (ii) {
+    if (ii && *s == '>') {
       ii = 0;
       goto nlTg;
     } else
@@ -340,7 +344,9 @@ sTgNm:
     goto err;
 
   case '>':
-    if (is) {
+    if (ii)
+      goto atr;
+    else if (is) {
       is = 0;
       l++, s--;
       goto nlTg;
@@ -364,7 +370,7 @@ sNm:
   (t + tL)->s = s - 1;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
-  case '"': case '\'': case '>':
+  case '"': case '\'':
     goto sTgNm;
 
   case '/':
@@ -374,7 +380,7 @@ sNm:
       goto sTgNm;
 
   case '?':
-    if (ii) {
+    if (ii && *s == '>') {
       ii = 0;
       goto sTgNm;
     } else
@@ -382,6 +388,12 @@ sNm:
 
   case '<':
     goto err;
+
+  case '>':
+    if (ii)
+      break;
+    else
+      goto sTgNm;
 
   default:
     break;
@@ -401,14 +413,12 @@ sTg:
   case '!':
     if (l > 5
      && *(s + 0) == '-'
-     && *(s + 1) == '-'
-     && (*(s + 2) == ' ' || *(s + 2) == '\n' || *(s + 2) == '\r')) {
-      for (l -= 2, s += 2; l; l--, s++)
-        if ((*(s + 0) == ' ' || *(s + 0) == '\n' || *(s + 0) == '\r')
+     && *(s + 1) == '-') {
+      for (l--, s++; l; l--, s++)
+        if (*(s + 0) == '-'
          && *(s + 1) == '-'
-         && *(s + 2) == '-'
-         && *(s + 3) == '>') {
-          l -= 4, s += 4;
+         && *(s + 2) == '>') {
+          l -= 3, s += 3;
           goto end;
         }
       l--, s++;
