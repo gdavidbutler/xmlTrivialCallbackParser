@@ -24,10 +24,10 @@ typedef struct {
 
 /* callback event types */
 typedef enum {
-  xmlTp_Eb /* element begin     - elementAttributeName is NULL and ecBodyOrEaValue is (const char *) of '<' */
+  xmlTp_Eb /* element begin     - elementAttributeName is NULL and ecBodyOrEaValue is '<' (l is 0) */
  ,xmlTp_Ea /* element attribute - elementAttributeName is NULL if the value has no name */
  ,xmlTp_Ec /* element content   - elementAttributeName is NULL if ecBodyOrEaValue is only whitespace */
- ,xmlTp_Ee /* element end       - elementAttributeName is NULL and ecBodyOrEaValue is (const char *) of '>' */
+ ,xmlTp_Ee /* element end       - elementAttributeName is NULL and ecBodyOrEaValue is '>' (l is 0) */
 } xmlTp_t;
 
 /* prototype of callback function */

@@ -68,7 +68,7 @@ atrEq:
   goto rtn;
 
 nlTg:
-  if (c && c(xmlTp_Ee, tL, t, 0, (const xmlSt_t *)s, v))
+  if (c && (nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v))
     goto rtn;
   tL--;
   for (; l--;) switch (*s++) {
@@ -259,7 +259,7 @@ atrValBr:
 
 eTgNm:
   (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
-  if (c && c(xmlTp_Ee, tL, t, 0, (const xmlSt_t *)s, v))
+  if (c && (nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v))
     goto rtn;
   tL--;
   l++, s--;
@@ -310,7 +310,7 @@ sTgNm:
       is = 1;
   }
   tL++;
-  if (c && c(xmlTp_Eb, tL, t, 0, (const xmlSt_t *)((t + tL - 1)->s - 1), v))
+  if (c && (nm.s = (t + tL - 1)->s - 1), c(xmlTp_Eb, tL, t, 0, &nm, v))
     goto rtn;
   l++, s--;
   for (; l--;) switch (*s++) {
