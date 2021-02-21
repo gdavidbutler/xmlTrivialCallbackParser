@@ -28,6 +28,7 @@ xmlParse(
 ,void *v
 ){
   const unsigned char *sb; /* save original buffer offset */
+  const unsigned char *cl; /* pointer to character after ':' if found */
   xmlSt_t nm;              /* attribute name */
   xmlSt_t vl;              /* value */
   long ns;                 /* non-space character seen in body */
@@ -43,8 +44,10 @@ xmlParse(
   is = 0;
 
 end:
+  cl = 0;
   nm.l = 0;
   vl.s = s;
+  vl.o = 0;
   goto bgn;
 
 err:
@@ -134,6 +137,11 @@ nlAtrVal:
 
 atrNm:
   nm.l = s - nm.s - 1;
+  if (cl) {
+    nm.o = cl - nm.s;
+    cl = 0;
+  } else
+    nm.o = 0;
   l++, s--;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
@@ -156,6 +164,11 @@ atr:
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'': case '=': case '>':
     goto atrNm;
+
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
 
   case '<':
     goto err;
@@ -263,6 +276,11 @@ atrValBr:
 
 eTgNm:
   (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
+  if (cl) {
+    (t + tL - 1)->o = cl - (t + tL - 1)->s;
+    cl = 0;
+  } else
+    (t + tL - 1)->o = 0;
   if (c && ((nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v)))
     goto rtn;
   tL--;
@@ -307,6 +325,11 @@ eTg:
 
 sTgNm:
   (t + tL)->l = s - (t + tL)->s - 1;
+  if (cl) {
+    (t + tL)->o = cl - (t + tL)->s;
+    cl = 0;
+  } else
+    (t + tL)->o = 0;
   if ((t + tL)->l) {
     if (*(t + tL)->s == '?')
       ii = 1;
@@ -372,6 +395,11 @@ sNm:
   case '\t': case '\n': case '\r': case ' ':
   case '"': case '\'':
     goto sTgNm;
+
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
 
   case '/':
     if (ii)

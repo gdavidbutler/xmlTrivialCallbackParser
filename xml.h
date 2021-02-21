@@ -16,10 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/* pointers referencing fragments of constant buffer must include length */
+/* xml "string" (fragment) is not \0 terminated */
 typedef struct {
   const unsigned char *s;
-  unsigned int l;
+  unsigned int l; /* entire length */
+  unsigned int o; /* offset of unprefixed name (character after the first ':', if any) */
 } xmlSt_t;
 
 /* callback event types */

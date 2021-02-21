@@ -20,16 +20,25 @@ cb(
   case xmlTp_Eb:
     printf("B ");
     for (; l; l--, tg++)
-      printf("/%.*s", tg->l, tg->s);
+      if (tg->o)
+        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+      else
+        printf("/%.*s", tg->l, tg->s);
     printf(" @%p\n", (void *)vl->s);
     break;
   case xmlTp_Ea:
     printf("A ");
     for (; l; l--, tg++)
-      printf("/%.*s", tg->l, tg->s);
-    if (nm)
-      printf(":\"%.*s\"=", nm->l, nm->s);
-    else
+      if (tg->o)
+        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+      else
+        printf("/%.*s", tg->l, tg->s);
+    if (nm) {
+      if (nm->o)
+        printf(":\"%.*s:%.*s\"=", nm->o - 1, nm->s, nm->l - nm->o, nm->s + nm->o);
+      else
+        printf(":\"%.*s\"=", nm->l, nm->s);
+    } else
       printf(":");
     {
       unsigned char *d;
@@ -47,7 +56,10 @@ cb(
   case xmlTp_Ec:
     printf("C ");
     for (; l; l--, tg++)
-      printf("/%.*s", tg->l, tg->s);
+      if (tg->o)
+        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+      else
+        printf("/%.*s", tg->l, tg->s);
     printf(":");
     {
       unsigned char *d;
@@ -65,7 +77,10 @@ cb(
   case xmlTp_Ee:
     printf("E ");
     for (; l; l--, tg++)
-      printf("/%.*s", tg->l, tg->s);
+      if (tg->o)
+        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+      else
+        printf("/%.*s", tg->l, tg->s);
     printf(" @%p\n", (void *)vl->s);
     break;
   }
