@@ -21,7 +21,7 @@ cb(
     printf("B ");
     for (; l; l--, tg++)
       if (tg->o)
-        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+        printf("/%.*s|%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
       else
         printf("/%.*s", tg->l, tg->s);
     printf(" @%p\n", (void *)vl->s);
@@ -30,16 +30,16 @@ cb(
     printf("A ");
     for (; l; l--, tg++)
       if (tg->o)
-        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+        printf("/%.*s|%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
       else
         printf("/%.*s", tg->l, tg->s);
     if (nm) {
       if (nm->o)
-        printf(":\"%.*s:%.*s\"=", nm->o - 1, nm->s, nm->l - nm->o, nm->s + nm->o);
+        printf("~%.*s|%.*s=", nm->o - 1, nm->s, nm->l - nm->o, nm->s + nm->o);
       else
-        printf(":\"%.*s\"=", nm->l, nm->s);
+        printf("~%.*s=", nm->l, nm->s);
     } else
-      printf(":");
+      printf("~");
     {
       unsigned char *d;
 
@@ -47,9 +47,9 @@ cb(
       if (!(d = malloc(vl->l))
        || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
        || i > (int)vl->l)
-        printf("\"%.*s\"(%d:%u)\n", vl->l, vl->s, i, vl->l);
+        printf("%.*s(%d|%u)\n", vl->l, vl->s, i, vl->l);
       else
-        printf("\"%.*s\"(%.*s)\n", vl->l, vl->s, i, d);
+        printf("%.*s(%.*s)\n", vl->l, vl->s, i, d);
       free(d);
     }
     break;
@@ -57,10 +57,10 @@ cb(
     printf("C ");
     for (; l; l--, tg++)
       if (tg->o)
-        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+        printf("/%.*s|%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
       else
         printf("/%.*s", tg->l, tg->s);
-    printf(":");
+    printf("~");
     {
       unsigned char *d;
 
@@ -68,7 +68,7 @@ cb(
       if (!(d = malloc(vl->l))
        || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
        || i > (int)vl->l)
-        printf("(%.*s)(%d:%u)\n", vl->l, vl->s, i, vl->l);
+        printf("(%.*s)(%d|%u)\n", vl->l, vl->s, i, vl->l);
       else
         printf("(%.*s)(%.*s)\n", vl->l, vl->s, i, d);
       free(d);
@@ -78,7 +78,7 @@ cb(
     printf("E ");
     for (; l; l--, tg++)
       if (tg->o)
-        printf("/%.*s:%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
+        printf("/%.*s|%.*s", tg->o - 1, tg->s, tg->l - tg->o, tg->s + tg->o);
       else
         printf("/%.*s", tg->l, tg->s);
     printf(" @%p\n", (void *)vl->s);

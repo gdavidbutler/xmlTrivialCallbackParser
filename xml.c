@@ -303,6 +303,11 @@ eNm:
   case '"': case '\'': case '/': case '<':
     goto err;
 
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
+
   case '>':
     goto eTgNm;
 
