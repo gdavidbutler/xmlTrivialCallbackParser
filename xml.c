@@ -66,7 +66,7 @@ atrEq:
     goto atrValSq;
 
   default:
-    goto atr;
+    goto err;
   }
   goto rtn;
 
