@@ -66,7 +66,7 @@ atrEq:
     goto atrValSq;
 
   default:
-    goto err;
+    goto atrValNq;
   }
   goto rtn;
 
@@ -179,7 +179,11 @@ atr:
   goto rtn;
 
 atrVal:
-  vl.l = s - vl.s - 1;
+  if (cl) {
+    vl.o = cl - vl.s;
+    cl = 0;
+  } else
+    vl.o = 0;
   if (c) {
     if (nm.l) {
       if (c(xmlTp_Ea, tL, t, &nm, &vl, v))
@@ -239,7 +243,13 @@ atrValDq:
   vl.s = s;
   for (; l--;) switch (*s++) {
   case '"':
+    vl.l = s - vl.s - 1;
     goto atrVal;
+
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
 
   default:
     break;
@@ -250,7 +260,32 @@ atrValSq:
   vl.s = s;
   for (; l--;) switch (*s++) {
   case '\'':
+    vl.l = s - vl.s - 1;
     goto atrVal;
+
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
+
+  default:
+    break;
+  }
+  goto rtn;
+
+atrValNq:
+  vl.s = s - 1;
+  for (; l--;) switch (*s++) {
+  case '\t': case '\n': case '\r': case ' ':
+  case '"': case '\'': case '>':
+    l++, s--;
+    vl.l = s - vl.s;
+    goto atrVal;
+
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
 
   default:
     break;
@@ -261,13 +296,20 @@ atrValBr:
   vl.s = s;
   is++;
   for (; l--;) switch (*s++) {
+  case ':':
+    if (!cl)
+      cl = s;
+    break;
+
   case '[':
     is++;
     break;
 
   case ']':
-    if (--is == 1)
+    if (--is == 1) {
+      vl.l = s - vl.s - 1;
       goto atrVal;
+    }
 
   default:
     break;

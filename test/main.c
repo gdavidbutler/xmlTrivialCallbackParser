@@ -43,13 +43,15 @@ cb(
     {
       unsigned char *d;
 
+      if (vl->o)
+        printf("%.*s|", vl->o - 1, vl->s);
       i = -1;
-      if (!(d = malloc(vl->l))
-       || (i = xmlDecodeBody(d, vl->l, vl->s, vl->l)) < 0
-       || i > (int)vl->l)
-        printf("%.*s(%d|%u)\n", vl->l, vl->s, i, vl->l);
+      if (!(d = malloc(vl->l - vl->o))
+       || (i = xmlDecodeBody(d, vl->l - vl->o, vl->s + vl->o, vl->l - vl->o)) < 0
+       || i > (int)(vl->l - vl->o))
+        printf("%.*s(%d|%u)\n", vl->l - vl->o, vl->s + vl->o, i, vl->l - vl->o);
       else
-        printf("%.*s(%.*s)\n", vl->l, vl->s, i, d);
+        printf("%.*s(%.*s)\n", vl->l - vl->o, vl->s + vl->o, i, d);
       free(d);
     }
     break;
