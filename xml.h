@@ -20,7 +20,7 @@
 typedef struct {
   const unsigned char *s;
   unsigned int l; /* entire length */
-  unsigned int o; /* offset of unprefixed name (character after the first ':', if any) */
+  unsigned int o; /* offset of local name (character after the first ':', if any) */
 } xmlSt_t;
 
 /* callback event types */
