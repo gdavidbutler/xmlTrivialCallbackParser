@@ -1344,10 +1344,10 @@ int
 xmlDecodeBase64(
   unsigned char *out
  ,unsigned int olen
- ,char const *in
+ ,const char *in
  ,unsigned int ilen
 ){
-  static unsigned char const b64[] = {
+  static const unsigned char b64[] = {
     66, 66, 66, 66,  66, 66, 66, 66,  66, 64, 64, 66,  66, 64, 66, 66,
     66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 66,
     64, 66, 66, 66,  66, 66, 66, 66,  66, 66, 66, 62,  66, 66, 66, 63,
@@ -1414,7 +1414,7 @@ int
 xmlEncodeBase64(
   char *out
  ,unsigned int olen
- ,unsigned char const *in
+ ,const unsigned char *in
  ,unsigned int ilen
 ){
   static const char b64[] =
@@ -1451,10 +1451,10 @@ int
 xmlDecodeHex(
   unsigned char *out
  ,unsigned int olen
- ,char const *in
+ ,const char *in
  ,unsigned int ilen
 ){
-  static unsigned char const hex[] = {
+  static const unsigned char hex[] = {
     17, 17, 17, 17,  17, 17, 17, 17,  17, 16, 16, 17,  17, 16, 17, 17,
     17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
     16, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,  17, 17, 17, 17,
@@ -1507,7 +1507,7 @@ int
 xmlEncodeHex(
   char *out
  ,unsigned int olen
- ,unsigned char const *in
+ ,const unsigned char *in
  ,unsigned int ilen
 ){
   static const char hex[] =
