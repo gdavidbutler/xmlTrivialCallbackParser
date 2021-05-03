@@ -107,5 +107,6 @@ main(
     putchar('>');
     putchar('\n');
   }
+  free(bf);
   return (0);
 }
