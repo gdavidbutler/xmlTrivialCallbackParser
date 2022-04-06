@@ -1657,7 +1657,8 @@ xmlNodeWalk(
       n = n->parent;
       --d;
       continue;
-    } else if (!n->nodeW)
+    }
+    if (!n->nodeW)
       a(n, d, xmlNodeVisitPreorder, c);
     else
       a(n, d, xmlNodeVisitInorder, c);
