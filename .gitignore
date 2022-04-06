@@ -52,5 +52,7 @@ Mkfile.old
 dkms.conf
 
 # Local Executables
+coders
 main
+dom
 print

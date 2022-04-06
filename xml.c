@@ -1523,3 +1523,170 @@ xmlEncodeHex(
   }
   return (len);
 }
+
+/* xmlNode routines */
+
+struct xmlNodeCx {
+  void *(*a)(void *, unsigned long);
+  xmlNode_t *n;
+  int w;
+};
+
+static int
+xmlNodeCb(
+  xmlTp_t t
+ ,unsigned int l
+ ,const xmlSt_t *g
+ ,const xmlSt_t *n
+ ,const xmlSt_t *v
+ ,void *x
+#define X ((struct xmlNodeCx *)x)
+){
+  xmlNode_t *tn;
+  void *tv;
+
+  switch (t) {
+
+  case xmlTp_Eb:
+    if (!(tv = X->a(X->n->node, (X->n->nodeN + 1) * sizeof (*X->n->node)))
+     || !(tn = X->a(0, sizeof (*tn))))
+      goto exit;
+    X->n->node = tv;
+    *(X->n->node + X->n->nodeN++) = tn;
+    tn->parent = X->n;
+    tn->xml = v->s;
+    tn->value.s = (g + (l - 1))->s;
+    tn->value.l = (g + (l - 1))->l;
+    tn->value.o = (g + (l - 1))->o;
+    tn->attribute = 0;
+    tn->attributeN = 0;
+    tn->node = 0;
+    tn->nodeN = 0;
+    tn->nodeW = 0;
+    X->n = tn;
+    break;
+
+  case xmlTp_Ea:
+    if (!(tv = X->a(X->n->attribute, (X->n->attributeN + 1) * sizeof (*X->n->attribute))))
+      goto exit;
+    X->n->attribute = tv;
+    if (n) {
+      (X->n->attribute + X->n->attributeN)->name.s = n->s;
+      (X->n->attribute + X->n->attributeN)->name.l = n->l;
+      (X->n->attribute + X->n->attributeN)->name.o = n->o;
+    } else {
+      (X->n->attribute + X->n->attributeN)->name.s = 0;
+      (X->n->attribute + X->n->attributeN)->name.l = 0;
+      (X->n->attribute + X->n->attributeN)->name.o = 0;
+    }
+    (X->n->attribute + X->n->attributeN)->value.s = v->s;
+    (X->n->attribute + X->n->attributeN)->value.l = v->l;
+    (X->n->attribute + X->n->attributeN)->value.o = v->o;
+    ++X->n->attributeN;
+    break;
+
+  case xmlTp_Ec:
+    if (!n && !X->w)
+      break;
+    if (!(tv = X->a(X->n->node, (X->n->nodeN + 1) * sizeof (*X->n->node)))
+     || !(tn = X->a(0, sizeof (*tn))))
+      goto exit;
+    X->n->node = tv;
+    *(X->n->node + X->n->nodeN++) = tn;
+    tn->parent = X->n;
+    tn->xml = 0;
+    tn->value.s = v->s;
+    tn->value.l = v->l;
+    tn->value.o = v->o;
+    tn->attribute = 0;
+    tn->attributeN = 0;
+    tn->node = 0;
+    tn->nodeN = 0;
+    tn->nodeW = 0;
+    break;
+
+  case xmlTp_Ee:
+    X->n = X->n->parent;
+    break;
+  }
+  return (0);
+exit:
+  return (1);
+}
+#undef X
+
+int
+xml2node(
+  void *(*a)(void *, unsigned long)
+ ,xmlNode_t *n
+ ,unsigned int m
+ ,xmlSt_t *t
+ ,const unsigned char *s
+ ,unsigned int l
+ ,int w
+){
+  struct xmlNodeCx cx;
+
+  if (!a || !n || !m || !t || !s)
+    return (-1);
+  if (!l)
+    return (0);
+  cx.a = a;
+  cx.n = n;
+  cx.w = w;
+  return (xmlParse(xmlNodeCb, m, t, s, l, &cx));
+}
+
+void
+xmlNodeWalk(
+  xmlNode_t *n
+ ,void (*a)(const xmlNode_t *, unsigned int, xmlNodeVisit_t, void *)
+ ,void *c
+){
+  unsigned int d;
+
+  d = 0;
+  while (n) {
+    if (!n->nodeN) {
+      a(n, d, xmlNodeVisitLeaf, c);
+      n = n->parent;
+      --d;
+      continue;
+    } else if (!n->nodeW)
+      a(n, d, xmlNodeVisitPreorder, c);
+    else
+      a(n, d, xmlNodeVisitInorder, c);
+    if (n->nodeW < n->nodeN) {
+      n = *(n->node + n->nodeW++);
+      ++d;
+    } else {
+      a(n, d, xmlNodeVisitPostorder, c);
+      n->nodeW = 0;
+      n = n->parent;
+      --d;
+    }
+  }
+}
+
+void
+xmlNodeFree(
+  void (*d)(void *)
+ ,xmlNode_t *n
+){
+  while (n) {
+    for (; n->nodeW < n->nodeN && !(*(n->node + n->nodeW))->xml; ++n->nodeW);
+    if (n->nodeW < n->nodeN) {
+      n = *(n->node + n->nodeW++);
+    } else {
+      n->attributeN = 0;
+      d(n->attribute);
+      n->attribute = 0;
+      while (n->nodeN)
+        d(*(n->node + --n->nodeN));
+      d(n->node);
+      n->node = 0;
+      n->nodeW = 0;
+      n = n->parent;
+    }
+  }
+}

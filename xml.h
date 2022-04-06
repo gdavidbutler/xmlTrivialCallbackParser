@@ -147,3 +147,55 @@ int xmlEncodeHex(
  ,const unsigned char *in
  ,unsigned int ilen
 );
+
+/* XML document node */
+typedef struct xmlNode {
+  struct xmlNode *parent;
+  const unsigned char *xml; /* 0=content else pointer to XML element */
+  xmlSt_t value;            /* content or element name */
+  struct {
+    xmlSt_t name;
+    xmlSt_t value;
+  } *attribute;             /* array of attributes */
+  struct xmlNode **node;    /* array of nodes */
+  unsigned int attributeN;  /* number of attributes */
+  unsigned int nodeN;       /* number of nodes */
+  unsigned int nodeW;       /* walk node */
+} xmlNode_t;
+
+/* parse an XML document of len, limiting max depth, with(out) white bodies into an allocated XML node */
+/* return -1 on error else offset of last char parsed */
+/* the node is allocated with all that was parseable */
+int
+xml2node(
+  void *(*realloc)(void *, unsigned long)
+ ,xmlNode_t *node
+ ,unsigned int numberOfElementTagBuf
+ ,xmlSt_t *elementTagBuf
+ ,const unsigned char *xml
+ ,unsigned int xlen
+ ,int whiteBody
+);
+
+/* xmlNode walk visit types */
+typedef enum {
+  xmlNodeVisitPreorder
+ ,xmlNodeVisitInorder
+ ,xmlNodeVisitPostorder
+ ,xmlNodeVisitLeaf
+} xmlNodeVisit_t;
+
+/* walk a xmlNode calling action on node with closure */
+void
+xmlNodeWalk(
+  xmlNode_t *n
+ ,void (*action)(const xmlNode_t *node, unsigned int depth, xmlNodeVisit_t visit, void *closure)
+ ,void *closure
+);
+
+/* deallocate an xmlNode tree */
+void
+xmlNodeFree(
+  void (*free)(void *)
+ ,xmlNode_t *node
+);
