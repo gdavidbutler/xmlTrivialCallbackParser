@@ -1554,13 +1554,15 @@ xmlNodeCb(
     X->n->node = tv;
     *(X->n->node + X->n->nodeN++) = tn;
     tn->parent = X->n;
-    tn->xml = v->s;
+    tn->attribute = 0;
+    tn->node = 0;
+    tn->beg = v->s;
+    tn->end = 0;
+    tn->user = 0;
     tn->value.s = (g + (l - 1))->s;
     tn->value.l = (g + (l - 1))->l;
     tn->value.o = (g + (l - 1))->o;
-    tn->attribute = 0;
     tn->attributeN = 0;
-    tn->node = 0;
     tn->nodeN = 0;
     tn->nodeW = 0;
     X->n = tn;
@@ -1594,18 +1596,21 @@ xmlNodeCb(
     X->n->node = tv;
     *(X->n->node + X->n->nodeN++) = tn;
     tn->parent = X->n;
-    tn->xml = 0;
+    tn->attribute = 0;
+    tn->node = 0;
+    tn->beg = 0;
+    tn->end = 0;
+    tn->user = 0;
     tn->value.s = v->s;
     tn->value.l = v->l;
     tn->value.o = v->o;
-    tn->attribute = 0;
     tn->attributeN = 0;
-    tn->node = 0;
     tn->nodeN = 0;
     tn->nodeW = 0;
     break;
 
   case xmlTp_Ee:
+    X->n->end = v->s;
     X->n = X->n->parent;
     break;
   }
@@ -1619,9 +1624,9 @@ int
 xml2node(
   void *(*a)(void *, unsigned long)
  ,xmlNode_t *n
- ,unsigned int m
  ,xmlSt_t *t
  ,const unsigned char *s
+ ,unsigned int m
  ,unsigned int l
  ,int w
 ){
@@ -1640,7 +1645,7 @@ xml2node(
 void
 xmlNodeWalk(
   xmlNode_t *n
- ,void (*a)(const xmlNode_t *, unsigned int, xmlNodeVisit_t, void *)
+ ,void (*a)(xmlNode_t *, unsigned int, xmlNodeVisit_t, void *)
  ,void *c
 ){
   unsigned int d;
@@ -1674,10 +1679,10 @@ xmlNodeFree(
  ,xmlNode_t *n
 ){
   while (n) {
-    for (; n->nodeW < n->nodeN && !(*(n->node + n->nodeW))->xml; ++n->nodeW);
-    if (n->nodeW < n->nodeN) {
+    for (; n->nodeW < n->nodeN && !(*(n->node + n->nodeW))->beg; ++n->nodeW);
+    if (n->nodeW < n->nodeN)
       n = *(n->node + n->nodeW++);
-    } else {
+    else {
       n->attributeN = 0;
       d(n->attribute);
       n->attribute = 0;

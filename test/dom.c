@@ -25,7 +25,7 @@
 
 static void
 xmlNodeVisit(
-  const xmlNode_t *n
+  xmlNode_t *n
  ,unsigned int d
  ,xmlNodeVisit_t v
  ,void *c
@@ -54,7 +54,7 @@ xmlNodeVisit(
     break;
 
   case xmlNodeVisitLeaf:
-    if (!n->xml) {
+    if (!n->beg) {
       unsigned char *s;
       int j;
 
@@ -107,7 +107,7 @@ main(
   }
   close(fd);
   memset(&doc, 0, sizeof(doc));
-  printf("%d %d\n", sz, xml2node(realloc, &doc, sizeof (tg) / sizeof (tg[0]), tg, bf, sz, 0));
+  printf("%d %d\n", sz, xml2node(realloc, &doc, tg, bf, sizeof (tg) / sizeof (tg[0]), sz, 0));
   xmlNodeWalk(&doc, xmlNodeVisit, 0);
   xmlNodeFree(free, &doc);
   free(bf);
