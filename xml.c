@@ -1548,10 +1548,11 @@ xmlNodeCb(
   switch (t) {
 
   case xmlTp_Eb:
-    if (!(tv = X->a(X->n->node, (X->n->nodeN + 1) * sizeof (*X->n->node)))
-     || !(tn = X->a(0, sizeof (*tn))))
+    if (!(tv = X->a(X->n->node, (X->n->nodeN + 1) * sizeof (*X->n->node))))
       goto exit;
     X->n->node = tv;
+    if (!(tn = X->a(0, sizeof (*tn))))
+      goto exit;
     *(X->n->node + X->n->nodeN++) = tn;
     tn->parent = X->n;
     tn->attribute = 0;
@@ -1590,10 +1591,11 @@ xmlNodeCb(
   case xmlTp_Ec:
     if (!n && !X->w)
       break;
-    if (!(tv = X->a(X->n->node, (X->n->nodeN + 1) * sizeof (*X->n->node)))
-     || !(tn = X->a(0, sizeof (*tn))))
+    if (!(tv = X->a(X->n->node, (X->n->nodeN + 1) * sizeof (*X->n->node))))
       goto exit;
     X->n->node = tv;
+    if (!(tn = X->a(0, sizeof (*tn))))
+      goto exit;
     *(X->n->node + X->n->nodeN++) = tn;
     tn->parent = X->n;
     tn->attribute = 0;
