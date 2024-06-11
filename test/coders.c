@@ -24,6 +24,7 @@
 
 int
 main(
+  void
 ){
   static const unsigned char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
   static const unsigned char uri[] = "http%3A%2F%2Ffoo.bar%23foo%3Ffoo%3Db%2Ba%2Br%26bar%3Df%20o%20o";

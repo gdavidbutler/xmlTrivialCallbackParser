@@ -107,6 +107,7 @@ cb(
 
 int
 main(
+  void
 ){
   unsigned char *bf;
   xmlSt_t tg[64];
