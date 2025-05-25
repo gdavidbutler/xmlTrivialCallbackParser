@@ -29,8 +29,8 @@ main(
   static const unsigned char enc[] = "this is a test <of>, <![CDATA[<hello>]]> & ]]>. how did it do?";
   static const unsigned char uri[] = "http%3A%2F%2Ffoo.bar%23foo%3Ffoo%3Db%2Ba%2Br%26bar%3Df%20o%20o";
   static const unsigned char sur[] = "http://foo.bar#foo?foo=b+a+r&bar=f o o";
-  static const char b64[] = "QmFzZTY0";
-  static const unsigned char s64[] = "Base64";
+  static const char b64[] = "KFVybCAgZG8/KQ==";
+  static const unsigned char s64[] = "(Url  do?)";
   static const char hex[] = "486578";
   static const unsigned char shx[] = "Hex";
   int sz;

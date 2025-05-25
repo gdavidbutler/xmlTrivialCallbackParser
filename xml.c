@@ -1439,7 +1439,7 @@ xmlEncodeBase64(
       *out++ = b64[in[0] >> 2];
       frag = (in[0] << 4) & 0x30;
       if (ilen > 1)
-          frag |= in[1] >> 4;
+        frag |= in[1] >> 4;
       *out++ = b64[frag];
       *out++ = (ilen > 1) ? b64[(in[1] << 2) & 0x3c] : '=';
       *out++ = '=';
