@@ -18,6 +18,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef __XML_H__
+#define __XML_H__
+
 /* xml "string" (fragment) is not \0 terminated */
 typedef struct {
   const unsigned char *s;
@@ -203,3 +206,5 @@ xmlNodeFree(
   void (*free)(void *)
  ,xmlNode_t *node
 );
+
+#endif /* __XML_H__ */
