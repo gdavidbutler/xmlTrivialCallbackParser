@@ -107,7 +107,7 @@ nlAtrVal:
       goto nlTg;
 
   case '?':
-    if (ii && *s == '>') {
+    if (ii && l && *s == '>') {
       ii = 0;
       goto nlTg;
     } else
@@ -211,7 +211,7 @@ atrVal:
       goto nlTg;
 
   case '?':
-    if (ii && *s == '>') {
+    if (ii && l && *s == '>') {
       ii = 0;
       goto nlTg;
     } else
@@ -406,7 +406,7 @@ sTgNm:
       goto nlTg;
 
   case '?':
-    if (ii && *s == '>') {
+    if (ii && l && *s == '>') {
       ii = 0;
       goto nlTg;
     } else
@@ -457,7 +457,7 @@ sNm:
       goto sTgNm;
 
   case '?':
-    if (ii && *s == '>') {
+    if (ii && l && *s == '>') {
       ii = 0;
       goto sTgNm;
     } else
@@ -492,7 +492,8 @@ sTg:
      && *(s + 0) == '-'
      && *(s + 1) == '-') {
       for (l--, s++; l; l--, s++)
-        if (*(s + 0) == '-'
+        if (l > 2
+         && *(s + 0) == '-'
          && *(s + 1) == '-'
          && *(s + 2) == '>') {
           l -= 3, s += 3;
@@ -522,7 +523,8 @@ bgn:
      && *(s + 0) == '!'
      && *(s + 1) == '[') {
       for (l--, s++; l; l--, s++)
-        if (*(s + 0) == ']'
+        if (l > 2
+         && *(s + 0) == ']'
          && *(s + 1) == ']'
          && *(s + 2) == '>') {
           l -= 3, s += 3;
@@ -578,7 +580,8 @@ xmlDecodeBody(
      && *(in + 7) == 'A'
      && *(in + 8) == '[') {
       for (in += 9, ilen -= 8; ilen--; in++, len++) {
-        if (*(in + 0) == ']'
+        if (ilen > 1
+         && *(in + 0) == ']'
          && *(in + 1) == ']'
          && *(in + 2) == '>') {
           in += 3, ilen -= 2;
@@ -1108,7 +1111,7 @@ xmlEncodeCdata(
     return (-1);
     break;
   case ']':
-    if (ilen > 1
+    if (ilen > 2
      && *(in + 1) == ']'
      && *(in + 2) == '>') {
       if (olen > 0) {
