@@ -38,7 +38,7 @@ xmlParse(
   unsigned int ii;         /* in instruction */
   unsigned int is;         /* in section */
 
-  if (!(sb = s))
+  if (!(sb = s) || l > ((unsigned int)-1 >> 1))
     return (-1);
   ns = 0;
   tL = 0;
@@ -50,6 +50,7 @@ end:
   nm.l = 0;
   vl.s = s;
   vl.o = 0;
+  ns = 0;
   goto bgn;
 
 err:
@@ -70,7 +71,7 @@ atrEq:
   default:
     goto atrValNq;
   }
-  goto rtn;
+  goto err;
 
 nlTg:
   if (c && ((nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v)))
@@ -83,7 +84,7 @@ nlTg:
   default:
     goto err;
   }
-  goto rtn;
+  goto err;
 
 nlAtrVal:
   if (c && c(xmlTp_Ea, tL, t, 0, &nm, v))
@@ -135,7 +136,7 @@ nlAtrVal:
   default:
     goto atr;
   }
-  goto rtn;
+  goto err;
 
 atrNm:
   nm.l = s - nm.s - 1;
@@ -158,7 +159,7 @@ atrNm:
   default:
     goto nlAtrVal;
   }
-  goto rtn;
+  goto err;
 
 atr:
   nm.s = s - 1;
@@ -178,7 +179,7 @@ atr:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 atrVal:
   if (cl) {
@@ -239,7 +240,7 @@ atrVal:
   default:
     goto atr;
   }
-  goto rtn;
+  goto err;
 
 atrValDq:
   vl.s = s;
@@ -256,7 +257,7 @@ atrValDq:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 atrValSq:
   vl.s = s;
@@ -273,7 +274,7 @@ atrValSq:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 atrValNq:
   vl.s = s - 1;
@@ -292,7 +293,7 @@ atrValNq:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 atrValBr:
   vl.s = s;
@@ -316,7 +317,7 @@ atrValBr:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 eTgNm:
   (t + tL - 1)->l = s - (t + tL - 1)->s - 1;
@@ -325,7 +326,7 @@ eTgNm:
     cl = 0;
   } else
     (t + tL - 1)->o = 0;
-  if (c && ((nm.s = s), c(xmlTp_Ee, tL, t, 0, &nm, v)))
+  if (c && ((nm.s = s - 1), c(xmlTp_Ee, tL, t, 0, &nm, v)))
     goto rtn;
   tL--;
   l++, s--;
@@ -336,7 +337,7 @@ eTgNm:
   default:
     goto err;
   }
-  goto rtn;
+  goto err;
 
 eNm:
   if (!tL)
@@ -358,7 +359,7 @@ eNm:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 eTg:
   for (; l--;) switch (*s++) {
@@ -370,7 +371,7 @@ eTg:
   default:
     goto eNm;
   }
-  goto rtn;
+  goto err;
 
 sTgNm:
   (t + tL)->l = s - (t + tL)->s - 1;
@@ -434,7 +435,7 @@ sTgNm:
   default:
     goto atr;
   }
-  goto rtn;
+  goto err;
 
 sNm:
   if (tL == m)
@@ -457,10 +458,9 @@ sNm:
       goto sTgNm;
 
   case '?':
-    if (ii && l && *s == '>') {
-      ii = 0;
+    if (l && *s == '>' && *(t + tL)->s == '?')
       goto sTgNm;
-    } else
+    else
       break;
 
   case '<':
@@ -475,7 +475,7 @@ sNm:
   default:
     break;
   }
-  goto rtn;
+  goto err;
 
 sTg:
   vl.l = s - vl.s - 1;
@@ -488,7 +488,7 @@ sTg:
     goto err;
 
   case '!':
-    if (l > 5
+    if (l > 4
      && *(s + 0) == '-'
      && *(s + 1) == '-') {
       for (l--, s++; l; l--, s++)
@@ -499,8 +499,7 @@ sTg:
           l -= 3, s += 3;
           goto end;
         }
-      l--, s++;
-      goto rtn;
+      goto err;
     }
     goto sNm;
 
@@ -510,10 +509,9 @@ sTg:
   default:
     goto sNm;
   }
-  goto rtn;
+  goto err;
 
 bgn:
-  ns = 0;
   for (; l--;) switch (*s++) {
   case '\t': case '\n': case '\r': case ' ':
     break;
@@ -522,6 +520,7 @@ bgn:
     if (l > 3
      && *(s + 0) == '!'
      && *(s + 1) == '[') {
+      ns = -1;
       for (l--, s++; l; l--, s++)
         if (l > 2
          && *(s + 0) == ']'
@@ -530,9 +529,7 @@ bgn:
           l -= 3, s += 3;
           goto bgn;
         }
-      l--;
-      s++;
-      goto rtn;
+      goto err;
     }
     goto sTg;
 
@@ -567,6 +564,8 @@ xmlDecodeBody(
 ){
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1))
+    return (-1);
   len = 0;
   for (; ilen--;) switch (*in) {
   case '<':
@@ -715,6 +714,8 @@ xmlDecodeBody(
         c = *in - '0';
         for (in++; ilen; in++, ilen--) switch (*in) {
         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+          if (c > (0x7fffffff - (*in - '0')) / 10)
+            goto err;
           c *= 10;
           c += *in - '0';
           break;
@@ -737,14 +738,20 @@ xmlDecodeBody(
 nxtH:
           for (in++; ilen; in++, ilen--) switch (*in) {
           case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+            if (c > (0x7fffffff >> 4))
+              goto err;
             c *= 16;
             c += *in - '0';
             break;
           case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+            if (c > (0x7fffffff >> 4))
+              goto err;
             c *= 16;
             c += 10 + (*in - 'A');
             break;
           case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+            if (c > (0x7fffffff >> 4))
+              goto err;
             c *= 16;
             c += 10 + (*in - 'a');
             break;
@@ -924,6 +931,8 @@ xmlEncodeString(
 ){
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1) / 6) /* worst case: &apos; or &quot; */
+    return (-1);
   len = 0;
   for (; ilen--;) switch (*in) {
   case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
@@ -1096,6 +1105,8 @@ xmlEncodeCdata(
   int len;
   unsigned int i;
 
+  if (ilen > (((unsigned int)-1 >> 1) - (sizeof (b) + sizeof (e) - 2)) / 5) /* worst case: ']]>' split, 15 out per 3 in */
+    return (-1);
   len = 0;
   for (i = 0; i < sizeof (b) - 1; i++, len++)
     if (olen > 0) {
@@ -1111,7 +1122,7 @@ xmlEncodeCdata(
     return (-1);
     break;
   case ']':
-    if (ilen > 2
+    if (ilen > 1
      && *(in + 1) == ']'
      && *(in + 2) == '>') {
       if (olen > 0) {
@@ -1254,6 +1265,8 @@ xmlDecodeUri(
   int len;
   unsigned char c;
 
+  if (ilen > ((unsigned int)-1 >> 1))
+    return (-1);
   len = 0;
   for (; ilen--;) switch (*in) {
   case '%':
@@ -1316,6 +1329,8 @@ xmlEncodeUri(
   static const char hex[] = "0123456789ABCDEF";
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1) / 3) /* worst case: %XX */
+    return (-1);
   len = 0;
   for (; ilen--;) switch (*in) { case '-': case '.':
   case '0': case'1': case'2': case'3': case'4': case'5': case'6': case'7': case'8': case'9':
@@ -1373,6 +1388,8 @@ xmlDecodeBase64(
   unsigned long buf;
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1))
+    return (-1);
   buf = 1;
   len = 0;
   while (ilen-- > 0) {
@@ -1422,6 +1439,8 @@ xmlEncodeBase64(
    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1) / 4 * 3) /* worst case: 4 out per 3 in */
+    return (-1);
   for (len = 0; ilen >= 3; in += 3, ilen -= 3, len += 4) {
     if (olen >= 4) {
       *out++ = b64[in[0] >> 2];
@@ -1476,6 +1495,8 @@ xmlDecodeHex(
   unsigned long buf;
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1))
+    return (-1);
   buf = 1;
   len = 0;
   while (ilen-- > 0) {
@@ -1512,6 +1533,8 @@ xmlEncodeHex(
    "0123456789ABCDEF";
   int len;
 
+  if (ilen > ((unsigned int)-1 >> 1) / 2)
+    return (-1);
   for (len = 0; ilen > 0; in++, ilen--, len += 2) {
     if (olen > 1) {
       *out++ = hex[*in >> 4];
