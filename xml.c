@@ -714,7 +714,7 @@ xmlDecodeBody(
         c = *in - '0';
         for (in++; ilen; in++, ilen--) switch (*in) {
         case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-          if (c > (0x7fffffff - (*in - '0')) / 10)
+          if (c > (0x7fffffffU - (*in - '0')) / 10)
             goto err;
           c *= 10;
           c += *in - '0';
@@ -738,19 +738,19 @@ xmlDecodeBody(
 nxtH:
           for (in++; ilen; in++, ilen--) switch (*in) {
           case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
-            if (c > (0x7fffffff >> 4))
+            if (c > (0x7fffffffU >> 4))
               goto err;
             c *= 16;
             c += *in - '0';
             break;
           case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-            if (c > (0x7fffffff >> 4))
+            if (c > (0x7fffffffU >> 4))
               goto err;
             c *= 16;
             c += 10 + (*in - 'A');
             break;
           case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-            if (c > (0x7fffffff >> 4))
+            if (c > (0x7fffffffU >> 4))
               goto err;
             c *= 16;
             c += 10 + (*in - 'a');
@@ -805,7 +805,7 @@ enc:
               olen -= 5;
             }
             len += 5;
-          } else if (c <= 0x7fffffff) { /* 31 bits */
+          } else if (c <= 0x7fffffffU) { /* 31 bits */
             if (olen > 5) {
               *out++ = 0xfc | (c >> 30);
               *out++ = 0x80 | (c >> 24 & 0x3f);
